@@ -5,6 +5,10 @@ import os
 
 if __name__ == '__main__':
     conf = {
+        'global': { 'server.environment': 'production',
+                      'server.socket_host': '0.0.0.0',
+                      'server.socket_port': 80,
+        },
         '/': {
             'tools.sessions.on': True,
             'tools.staticdir.on': True,
