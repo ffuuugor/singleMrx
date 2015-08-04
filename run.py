@@ -2,10 +2,13 @@ __author__ = 'ffuuugor'
 import cherrypy
 from app.simpleserver import HelloWorld
 import os
+from cp_sqlalchemy import SQLAlchemyTool, SQLAlchemyPlugin
+from app.models import Base
 
 if __name__ == '__main__':
     conf = {
         '/': {
+            'tools.db.on': True,
             'tools.sessions.on': True,
             'tools.staticdir.on': True,
             'tools.staticdir.dir': '.',
@@ -17,4 +20,12 @@ if __name__ == '__main__':
             'tools.staticdir.dir': 'static'
         }
     }
-    cherrypy.quickstart(HelloWorld(), '/', conf)
+    cherrypy.tools.db = SQLAlchemyTool()
+
+    SQLAlchemyPlugin(
+        cherrypy.engine, Base, 'postgres://localhost:5432/'
+    ).subscribe()
+
+    cherrypy.tree.mount(HelloWorld(), '/', conf)
+    cherrypy.engine.start()
+    cherrypy.engine.block()
