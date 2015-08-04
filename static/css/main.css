@@ -1,0 +1,30 @@
+html, body {
+    background-color: #3b3b3b;
+}
+
+html, body, .menu-bar {
+    margin: 0;
+    padding: 0;
+}
+
+.icon-menu {
+    color: #fff;
+    cursor: pointer;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 20px;
+    padding-bottom: 10px;
+    padding-left: 15px;
+    padding-top: 10px;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.icon-menu i {
+    margin-right: 5px;
+}
+
+html, body, #map-canvas {
+    height: 97.7%;
+    margin: 0;
+    padding: 2px;
+}

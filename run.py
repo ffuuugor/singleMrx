@@ -7,6 +7,10 @@ from app.models import Base
 
 if __name__ == '__main__':
     conf = {
+        'global': { 'server.environment': 'production',
+                      'server.socket_host': '0.0.0.0',
+                      'server.socket_port': 80,
+        },
         '/': {
             'tools.db.on': True,
             'tools.sessions.on': True,
