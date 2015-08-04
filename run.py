@@ -6,11 +6,14 @@ from cp_sqlalchemy import SQLAlchemyTool, SQLAlchemyPlugin
 from app.models import Base
 
 if __name__ == '__main__':
+    global_conf =  {
+        'global': {
+            'server.environment': 'production',
+            'server.socket_port': 80,
+        }
+    }
+
     conf = {
-        'global': { 'server.environment': 'production',
-                      'server.socket_host': '0.0.0.0',
-                      'server.socket_port': 80,
-        },
         '/': {
             'tools.db.on': True,
             'tools.sessions.on': True,
@@ -24,6 +27,7 @@ if __name__ == '__main__':
             'tools.staticdir.dir': 'static'
         }
     }
+    cherrypy.config.update(global_conf)
     cherrypy.tools.db = SQLAlchemyTool()
 
     SQLAlchemyPlugin(
@@ -31,5 +35,6 @@ if __name__ == '__main__':
     ).subscribe()
 
     cherrypy.tree.mount(HelloWorld(), '/', conf)
+
     cherrypy.engine.start()
     cherrypy.engine.block()
