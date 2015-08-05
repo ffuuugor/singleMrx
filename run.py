@@ -4,11 +4,13 @@ from app.simpleserver import HelloWorld
 import os
 from cp_sqlalchemy import SQLAlchemyTool, SQLAlchemyPlugin
 from app.models import Base
+from settings import DB_URI
 
 if __name__ == '__main__':
     global_conf =  {
         'global': {
             'server.environment': 'production',
+            'server.socket_host': '0.0.0.0',
             'server.socket_port': 80,
         }
     }
@@ -31,7 +33,7 @@ if __name__ == '__main__':
     cherrypy.tools.db = SQLAlchemyTool()
 
     SQLAlchemyPlugin(
-        cherrypy.engine, Base, 'postgres://localhost:5432/'
+        cherrypy.engine, Base, DB_URI
     ).subscribe()
 
     cherrypy.tree.mount(HelloWorld(), '/', conf)
