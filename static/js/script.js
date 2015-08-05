@@ -4,15 +4,23 @@
 * the order in which these markers should display on top of each
 * other.
 */
-var places = [
-	['<iframe src="http://archive.corewebprogramming.com/Chapter24/DontClick.html"></iframe>', 55.714707, 37.601808, 200, 7],
-	['Памятник Юрию Долгорукому', 55.761993, 37.610164, 50, 6],
-	['Посольство республики Молдова', 55.761914, 37.623006, 70, 5],
-	['Театральная площадь', 55.759222, 37.619036, 50, 4],
-	['Малый зал консерватории', 55.756191, 37.604199, 60, 3],
-	['Шуховская башня', 55.717294, 37.611571, 100, 2],
-	['Театр имени Пушкина', 55.762325, 37.601548, 100, 1],
-];
+
+function sendHttpRequest(callback, method, url, is_async, body) {
+	var xhr = new XMLHttpRequest();
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState == 4) {
+			callback(xhr.responseText);
+		}
+	}
+	xhr.open(method, url, is_async);
+	xhr.send(body);
+}
+function sendGetRequest(callback, url, is_async) {
+	sendHttpRequest(callback, 'GET', url, is_async);
+}
+function sendPostRequest(callback, url, is_async, body) {
+	sendHttpRequest(callback, 'POST', url, is_async, body);
+}
 
 // you can specify the default lat long
 var map,
@@ -36,73 +44,83 @@ function initializeMap()
 		}
 	});
 
-	setMarkers(map, places);
+	setMarkers(map);
 }
 
-function setMarkers(map, locations) {
-	// Add markers to the map
+function setMarkers(map) {
 
-	// Marker sizes are expressed as a Size of X,Y
-	// where the origin of the image (0,0) is located
-	// in the top left of the image.
+	sendGetRequest(function(responseText){
+		var locations = JSON.parse(responseText);
+		console.log(locations);
+		drawMarkers(map, locations);
+	}, '/task', true);
 
-	// Origins, anchor positions and coordinates of the marker
-	// increase in the X direction to the right and in
-	// the Y direction down.
-	var image = {
-		url: 'static/image/beachflag.png',
-		// This marker is 20 pixels wide by 32 pixels tall.
-		size: new google.maps.Size(20, 32),
-		// The origin for this image is 0,0.
-		origin: new google.maps.Point(0,0),
-		// The anchor for this image is the base of the flagpole at 0,32.
-		anchor: new google.maps.Point(0, 32)
-	};
-	// Shapes define the clickable region of the icon.
-	// The type defines an HTML &lt;area&gt; element 'poly' which
-	// traces out a polygon as a series of X,Y points. The final
-	// coordinate closes the poly by connecting to the first
-	// coordinate.
-	var shape = {
-		coords: [1, 1, 1, 20, 18, 20, 18 , 1],
-		type: 'poly'
-	};
+	function drawMarkers(map, locations) {
+		// Add markers to the map
 
-	var infowindow = new google.maps.InfoWindow();
-	var marker, i;
+		// Marker sizes are expressed as a Size of X,Y
+		// where the origin of the image (0,0) is located
+		// in the top left of the image.
 
-	for (i = 0; i < locations.length; i++) {
-		var location = locations[i];
-		var myLatLng = new google.maps.LatLng(location[1], location[2]);
-
-		marker = new google.maps.Marker({
-			position: myLatLng,
-			animation: google.maps.Animation.DROP,
-			map: map,
-			icon: image,
-			shape: shape,
-			zIndex: location[4],
-			content: location[0],
-		});
-
-		google.maps.event.addListener(marker, 'click', (function(marker, i) {
-				return function() {
-					infowindow.setContent(locations[i][0]);
-					infowindow.open(map, marker);
-				}
-			})(marker, i));
-
-		var circleOptions = {
-			strokeColor: '#F59000',
-			strokeOpacity: 0.3,
-			strokeWeight: 1,
-			fillColor: '#F59000',
-			fillOpacity: 0.2,
-			map: map,
-			center: myLatLng,
-			radius: location[3]
+		// Origins, anchor positions and coordinates of the marker
+		// increase in the X direction to the right and in
+		// the Y direction down.
+		var image = {
+			url: 'static/image/beachflag.png',
+			// This marker is 20 pixels wide by 32 pixels tall.
+			size: new google.maps.Size(20, 32),
+			// The origin for this image is 0,0.
+			origin: new google.maps.Point(0,0),
+			// The anchor for this image is the base of the flagpole at 0,32.
+			anchor: new google.maps.Point(0, 32)
 		};
-		var locationCircle = new google.maps.Circle(circleOptions);
+		// Shapes define the clickable region of the icon.
+		// The type defines an HTML &lt;area&gt; element 'poly' which
+		// traces out a polygon as a series of X,Y points. The final
+		// coordinate closes the poly by connecting to the first
+		// coordinate.
+		var shape = {
+			coords: [1, 1, 1, 20, 18, 20, 18 , 1],
+			type: 'poly'
+		};
+
+		var infowindow = new google.maps.InfoWindow();
+		var marker, i;
+
+		for (i = 0; i < locations.length; i++) {
+			var location = locations[i];
+			var myLatLng = new google.maps.LatLng(location.center_lat, location.center_lng);
+
+			marker = new google.maps.Marker({
+				position: myLatLng,
+				animation: google.maps.Animation.DROP,
+				map: map,
+				icon: image,
+				shape: shape,
+				zIndex: i,
+				content: location.img_uri, // to delete?
+			});
+
+			// NOTE use locations[i] explicitly
+			google.maps.event.addListener(marker, 'click', (function(marker, i) {
+					return function() {
+						infowindow.setContent('<img src="' + locations[i].img_uri + '">');
+						infowindow.open(map, marker);
+					}
+				})(marker, i));
+
+			var circleOptions = {
+				strokeColor: '#F59000',
+				strokeOpacity: 0.3,
+				strokeWeight: 1,
+				fillColor: '#F59000',
+				fillOpacity: 0.2,
+				map: map,
+				center: myLatLng,
+				radius: location.radius
+			};
+			var locationCircle = new google.maps.Circle(circleOptions);
+		}
 	}
 }
 
