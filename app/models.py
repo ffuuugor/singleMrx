@@ -35,13 +35,8 @@ class Point(Base):
     lat = Column("lat", Float)
     lng = Column("lng", Float)
     img_uri = Column("img_uri", String)
-
-class Answer(Base):
-    __tablename__ = 'photo_answer'
-    __table_args__ = {'schema': 'mrx'}
-
-    id = Column("id", Integer, ForeignKey("mrx.photo_point.id"), primary_key=True)
     answer = Column("answer", ARRAY(String))
+
 
 def as_dict(model, columns=None):
 
