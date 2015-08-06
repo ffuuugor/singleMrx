@@ -2,8 +2,9 @@ __author__ = 'ffuuugor'
 import cherrypy
 import os
 import sys
-from models import Game, Task, Point, as_dict
+from models import Game, Task, Point, MrXPos, as_dict
 import json
+import datetime
 
 PATH = os.path.abspath(os.path.dirname(__file__))
 class HelloWorld(object):
@@ -13,19 +14,22 @@ class HelloWorld(object):
         return "Hello world! %d" % l
 
     @cherrypy.expose
+    @cherrypy.tools.json_out()
     def task(self, id=None):
         query = cherrypy.request.db.query(Task, Point).join(Point)
         if id is not None:
             query = query.filter(Task.id == id)
 
-        columns = ["id", "point_id", "status","center_lat","center_lng", "radius", "img_uri"]
+        columns = ["id", "point_id", "status","center_lat",
+                   "center_lng", "radius", "img_uri"]
 
         ret = [as_dict(x, columns) for x in query.all()]
-        return json.dumps(ret)
+        return ret
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
+    @cherrypy.tools.allow(methods=['POST'])
     def answer(self, task_id):
         input_json = cherrypy.request.json
 
@@ -49,7 +53,55 @@ class HelloWorld(object):
                     return {"status":"wrong"}
 
         else:
-            return {"status":"missing answer"}
+            raise cherrypy.HTTPError(400)
+
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.allow(methods=['POST'])
+    def add_mrx_pos(self):
+        input_json = cherrypy.request.json
+
+        if "lat" in input_json and "lng" in input_json:
+            mrx_pos = MrXPos(lat=input_json["lat"], lng=input_json["lng"],
+                             time=datetime.datetime.now(), exposed=False, game_id=1)
+
+            cherrypy.request.db.add(mrx_pos)
+            cherrypy.request.db.commit()
+
+            return {"status":"success"}
+        else:
+            raise cherrypy.HTTPError(400)
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def get_exposed_pos(self):
+        positions = cherrypy.request.db.query(MrXPos).filter(MrXPos.exposed == True).all()
+        return [as_dict(x) for x in positions]
+
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.allow(methods=['POST'])
+    def use_task(self, task_id):
+        task = cherrypy.request.db.query(Task).filter(Task.id == task_id).first()
+
+        if task.status != "done":
+            return {"status":"wrong task status"}
+
+        mrx_pos = cherrypy.request.db.query(MrXPos).order_by(MrXPos.time.desc()).first()
+
+        if mrx_pos.exposed:
+            return {"status":"already exposed"}
+        else:
+            mrx_pos.exposed = True
+            task.status = "closed"
+            cherrypy.request.db.commit()
+            return {"status":"success"}
+
+
+
 
 
 

@@ -1,9 +1,10 @@
 __author__ = 'ffuuugor'
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.types import String, Integer, Float, Enum
+from sqlalchemy.types import String, Integer, Float, Enum, DateTime, Boolean
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship, backref
+from datetime import datetime
 
 Base = declarative_base()
 
@@ -37,6 +38,19 @@ class Point(Base):
     img_uri = Column("img_uri", String)
     answer = Column("answer", ARRAY(String))
 
+class MrXPos(Base):
+    __tablename__ = 'mrx_pos'
+    __table_args__ = {'schema': 'mrx'}
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    lat = Column("lat", Float)
+    lng = Column("lng", Float)
+    time = Column("time", DateTime)
+    exposed = Column("exposed", Boolean)
+
+    game_id = Column("game_id", Integer, ForeignKey("mrx.game.id"))
+
+
 
 def as_dict(model, columns=None):
 
@@ -50,6 +64,11 @@ def as_dict(model, columns=None):
     if columns is not None:
         ret = {x: ret.get(x) for x in columns}
 
+    for key in ret.keys():
+        if type(ret[key]) == datetime:
+            ret[key] = str(ret[key])
+
     return ret
+
 
 
