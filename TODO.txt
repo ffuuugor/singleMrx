@@ -1,2 +1,4 @@
 Review timeouts for getCurrentPosition() and watchPosition()
 Review external sources links
+Add description for DB tables
+Add description for data structure received from /task and /point

@@ -1,10 +1,3 @@
-
-/**
-* Data for the markers consisting of a infowindow content, latitude, longitude, circle area radius, and a zIndex for
-* the order in which these markers should display on top of each
-* other.
-*/
-
 function sendHttpRequest(callback, method, url, is_async, body) {
 	var xhr = new XMLHttpRequest();
 	xhr.onreadystatechange = function() {
@@ -22,7 +15,7 @@ function sendPostRequest(callback, url, is_async, body) {
 	sendHttpRequest(callback, 'POST', url, is_async, body);
 }
 
-// you can specify the default lat long
+// you can specify the default latitude and longitude
 var map,
 	currentPositionMarker,
 	currentPositionMarkerInfoWindow
@@ -40,7 +33,7 @@ function initializeMap()
 		zoomControl: true,
 		zoomControlOptions: {
 			style: google.maps.ZoomControlStyle.SMALL,
-			position: google.maps.ControlPosition.RIGHT_BOTTOM
+			position: google.maps.ControlPosition.RIGHT_CENTER
 		}
 	});
 
