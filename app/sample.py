@@ -6,7 +6,7 @@ import json
 def answer():
     data={"answer":"Юрий долгорукий"}
     headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-    r = requests.post("http://52.10.86.71//answer?task_id=1", data=json.dumps(data), headers=headers)
+    r = requests.post("http://52.10.86.71/answer?task_id=1", data=json.dumps(data), headers=headers)
 
     print r.status_code
     print r.json()
@@ -21,17 +21,17 @@ def add_pos():
           {"lat":55.752012, "lng":37.640963}]
 
     for d in data:
-        r = requests.post("http://localhost:8080/add_mrx_pos", data=json.dumps(d), headers=headers)
+        r = requests.post("http://localhost:80/add_mrx_pos", data=json.dumps(d), headers=headers)
         print r.status_code
         print r.json()
 
 def use_task():
-    r = requests.post("http://localhost:8080/use_task?task_id=2")
+    r = requests.post("http://localhost:80/use_task?task_id=2")
     print r.status_code
     print r.json()
 
 def get_pos():
-    r = requests.get("http://localhost:8080/get_exposed_pos")
+    r = requests.get("http://localhost:80/get_exposed_pos")
     print r.status_code
     print r.text
 
