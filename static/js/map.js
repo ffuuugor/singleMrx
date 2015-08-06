@@ -79,7 +79,7 @@ function drawTaskMarkers(map, tasks) {
         // NOTE use tasks[i] explicitly
         google.maps.event.addListener(marker, 'click', (function(marker, i) {
                 return function() {
-                    infowindow.setContent(getTaskContent(task));
+                    infowindow.setContent(getTaskContent(tasks[i]));
                     infowindow.open(map, marker);
                 }
             })(marker, i));
@@ -98,11 +98,11 @@ function drawTaskMarkers(map, tasks) {
     }
 }
 
-getTaskContent(task) {
+function getTaskContent(task) {
 	var content = '<a href="'
-		+ tasks[i].img_uri
+		+ task.img_uri
 		+ '" target="_blank"><img src="'
-		+ tasks[i].img_uri
+		+ task.img_uri
 		+ '" height="300" width="300"></a><form method="post" action="answer?task_id='
 		+ task.id
 		+ '" enctype="application/json"><input type="text" name="answer"><input type="submit" value="Answer"></form>';

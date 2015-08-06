@@ -2,3 +2,5 @@
 .venv
 *.pyc
 settings.py
+.DS_Store
+task
