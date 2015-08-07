@@ -1,4 +1,4 @@
 .idea
 .venv
 *.pyc
-settings.py
+static/image/uploads

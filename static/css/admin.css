@@ -1,0 +1,10 @@
+html, body {
+    background-color: #3b3b3b;
+    color: #ffffff;
+}
+
+html, body, #map-canvas {
+    height: 80%;
+    margin-bottom: 20px;
+    padding: 0px;
+}

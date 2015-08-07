@@ -1,10 +1,8 @@
 __author__ = 'ffuuugor'
 import cherrypy
-from app.simpleserver import HelloWorld
 import os
 from cp_sqlalchemy import SQLAlchemyTool, SQLAlchemyPlugin
 from app.models import Base
-from settings import DB_URI
 
 def http_methods_allowed(methods=['GET', 'HEAD']):
     method = cherrypy.request.method.upper()
@@ -12,38 +10,26 @@ def http_methods_allowed(methods=['GET', 'HEAD']):
         cherrypy.response.headers['Allow'] = ", ".join(methods)
         raise cherrypy.HTTPError(405)
 
+PATH = os.path.abspath(os.path.dirname(__file__))
 if __name__ == '__main__':
-    global_conf =  {
-        'global': {
-            'server.environment': 'production',
-            'server.socket_host': '0.0.0.0',
-            'server.socket_port': 80,
-        }
-    }
+    cherrypy.config.update('app.conf')
 
-    conf = {
-        '/': {
-            'tools.db.on': True,
-            'tools.sessions.on': True,
-            'tools.staticdir.on': True,
-            'tools.staticdir.dir': '.',
-            'tools.staticdir.index': 'view/index.html',
-            'tools.staticdir.root': os.path.abspath(os.getcwd())
-        },
-        '/static': {
-            'tools.staticdir.on': True,
-            'tools.staticdir.dir': 'static'
-        }
-    }
-    cherrypy.config.update(global_conf)
+    #recreate symlink to data dir
+    uploads_dir = os.path.join(PATH,"static","image","uploads")
+    if os.path.exists(uploads_dir):
+        os.remove(uploads_dir)
+    os.symlink(cherrypy.config["mrx.uploads.dir"], uploads_dir)
+
+
     cherrypy.tools.db = SQLAlchemyTool()
     cherrypy.tools.allow = cherrypy.Tool('on_start_resource', http_methods_allowed)
 
     SQLAlchemyPlugin(
-        cherrypy.engine, Base, DB_URI
+        cherrypy.engine, Base, cherrypy.config["mrx.db.uri"]
     ).subscribe()
 
-    cherrypy.tree.mount(HelloWorld(), '/', conf)
+    from app.simpleserver import HelloWorld
+    cherrypy.tree.mount(HelloWorld(), '/', 'app.conf')
 
     cherrypy.engine.start()
     cherrypy.engine.block()

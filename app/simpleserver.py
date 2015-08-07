@@ -5,8 +5,13 @@ import sys
 from models import Game, Task, Point, MrXPos, as_dict
 import json
 import datetime
+import cgi
+import tempfile
+import mimetypes
+import hashlib
+import time
+mimetypes.init()
 
-PATH = os.path.abspath(os.path.dirname(__file__))
 class HelloWorld(object):
     @cherrypy.expose
     def index(self):
@@ -48,7 +53,7 @@ class HelloWorld(object):
                 if user_answer.lower() in correct_answers:
                     task.status = "done"
                     cherrypy.request.db.commit()
-                    return {"status":"correct"}
+                    return {"status":"success"}
                 else:
                     return {"status":"wrong"}
 
@@ -99,6 +104,24 @@ class HelloWorld(object):
             task.status = "closed"
             cherrypy.request.db.commit()
             return {"status":"success"}
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def upload(self, file, lat, lng, answer):
+        extension = mimetypes.guess_extension(file.content_type.value)
+        filename = hashlib.md5(str(time.time())).hexdigest() + extension
+        filepath = os.path.join(cherrypy.config["mrx.uploads.dir"], filename)
+
+        f = open(filepath,"w")
+        data = file.file.read()
+        print >> f, data
+        f.close()
+
+        point = Point(lat=float(lat), lng=float(lng), answer=answer.split(','), img_uri=filename)
+        cherrypy.request.db.add(point)
+        cherrypy.request.db.commit()
+
+
 
 
 
