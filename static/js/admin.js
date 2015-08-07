@@ -68,7 +68,7 @@ var main = function () {
 
 
 	$('#myForm').ajaxForm(function() { 
-    	alert("Thank you for your comment!"); 
+    	alert("OK"); 
     	location.reload();
     });
 }
