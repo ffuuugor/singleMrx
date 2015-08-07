@@ -92,7 +92,7 @@ function drawTaskMarkers(map, tasks) {
             fillOpacity: 0.2,
             map: map,
             center: myLatLng,
-            radius: tasks.radius
+            radius: tasks[i].radius
         };
         var taskCircle = new google.maps.Circle(circleOptions);
     }
