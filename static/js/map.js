@@ -166,13 +166,13 @@ function doFallback() {
 // current position of the user
 function setCurrentPosition(pos) {
 	var image = {
-		url: 'static/image/pegman.png',
-		size: new google.maps.Size(24, 24),
+		url: 'static/image/pegman_sherlock.png',
+		size: new google.maps.Size(40, 50),
 		origin: new google.maps.Point(0,0),
-		anchor: new google.maps.Point(12, 24)
+		anchor: new google.maps.Point(20, 50)
 	};
 	var shape = {
-		coords: [1, 1, 1, 20, 18, 20, 18 , 1],
+		coords: [1, 1, 1, 50, 40, 50, 40 , 1],
 		type: 'poly'
 	};
 	currentPositionMarkerInfoWindow = new google.maps.InfoWindow({
