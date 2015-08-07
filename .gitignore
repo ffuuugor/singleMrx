@@ -2,3 +2,5 @@
 .venv
 *.pyc
 static/image/uploads
+.DS_Store
+task

@@ -1,28 +1,4 @@
-
-/**
-* Data for the markers consisting of a infowindow content, latitude, longitude, circle area radius, and a zIndex for
-* the order in which these markers should display on top of each
-* other.
-*/
-
-function sendHttpRequest(callback, method, url, is_async, body) {
-	var xhr = new XMLHttpRequest();
-	xhr.onreadystatechange = function() {
-		if (xhr.readyState == 4) {
-			callback(xhr.responseText);
-		}
-	}
-	xhr.open(method, url, is_async);
-	xhr.send(body);
-}
-function sendGetRequest(callback, url, is_async) {
-	sendHttpRequest(callback, 'GET', url, is_async);
-}
-function sendPostRequest(callback, url, is_async, body) {
-	sendHttpRequest(callback, 'POST', url, is_async, body);
-}
-
-// you can specify the default lat long
+// you can specify the default latitude and longitude
 var map,
 	currentPositionMarker,
 	currentPositionMarkerInfoWindow
@@ -40,88 +16,98 @@ function initializeMap()
 		zoomControl: true,
 		zoomControlOptions: {
 			style: google.maps.ZoomControlStyle.SMALL,
-			position: google.maps.ControlPosition.RIGHT_BOTTOM
+			position: google.maps.ControlPosition.RIGHT_CENTER
 		}
 	});
 
-	setMarkers(map);
+	setTaskMarkers(map);
 }
 
-function setMarkers(map) {
-
+function setTaskMarkers(map) {
 	sendGetRequest(function(responseText){
-		var locations = JSON.parse(responseText);
-		console.log(locations);
-		drawMarkers(map, locations);
+		var tasks = JSON.parse(responseText);
+		console.log(tasks);
+		drawTaskMarkers(map, tasks);
 	}, '/task', true);
+}
 
-	function drawMarkers(map, locations) {
-		// Add markers to the map
+function drawTaskMarkers(map, tasks) {
+    // Add tasks to the map
 
-		// Marker sizes are expressed as a Size of X,Y
-		// where the origin of the image (0,0) is located
-		// in the top left of the image.
+    // Marker sizes are expressed as a Size of X,Y
+    // where the origin of the image (0,0) is located
+    // in the top left of the image.
 
-		// Origins, anchor positions and coordinates of the marker
-		// increase in the X direction to the right and in
-		// the Y direction down.
-		var image = {
-			url: 'static/image/beachflag.png',
-			// This marker is 20 pixels wide by 32 pixels tall.
-			size: new google.maps.Size(20, 32),
-			// The origin for this image is 0,0.
-			origin: new google.maps.Point(0,0),
-			// The anchor for this image is the base of the flagpole at 0,32.
-			anchor: new google.maps.Point(0, 32)
-		};
-		// Shapes define the clickable region of the icon.
-		// The type defines an HTML &lt;area&gt; element 'poly' which
-		// traces out a polygon as a series of X,Y points. The final
-		// coordinate closes the poly by connecting to the first
-		// coordinate.
-		var shape = {
-			coords: [1, 1, 1, 20, 18, 20, 18 , 1],
-			type: 'poly'
-		};
+    // Origins, anchor positions and coordinates of the marker
+    // increase in the X direction to the right and in
+    // the Y direction down.
+    var image = {
+        url: 'static/image/beachflag.png',
+        // This marker is 20 pixels wide by 32 pixels tall.
+        size: new google.maps.Size(20, 32),
+        // The origin for this image is 0,0.
+        origin: new google.maps.Point(0,0),
+        // The anchor for this image is the base of the flagpole at 0,32.
+        anchor: new google.maps.Point(0, 32)
+    };
+    // Shapes define the clickable region of the icon.
+    // The type defines an HTML &lt;area&gt; element 'poly' which
+    // traces out a polygon as a series of X,Y points. The final
+    // coordinate closes the poly by connecting to the first
+    // coordinate.
+    var shape = {
+        coords: [1, 1, 1, 20, 18, 20, 18 , 1],
+        type: 'poly'
+    };
 
-		var infowindow = new google.maps.InfoWindow();
-		var marker, i;
+    var infowindow = new google.maps.InfoWindow();
+    var marker, i;
 
-		for (i = 0; i < locations.length; i++) {
-			var location = locations[i];
-			var myLatLng = new google.maps.LatLng(location.center_lat, location.center_lng);
+    for (i = 0; i < tasks.length; i++) {
+        var task = tasks[i];
+        var myLatLng = new google.maps.LatLng(task.center_lat, task.center_lng);
 
-			marker = new google.maps.Marker({
-				position: myLatLng,
-				animation: google.maps.Animation.DROP,
-				map: map,
-				icon: image,
-				shape: shape,
-				zIndex: i,
-				content: location.img_uri, // to delete?
-			});
+        marker = new google.maps.Marker({
+            position: myLatLng,
+            animation: google.maps.Animation.DROP,
+            map: map,
+            icon: image,
+            shape: shape,
+            zIndex: i
+        });
 
-			// NOTE use locations[i] explicitly
-			google.maps.event.addListener(marker, 'click', (function(marker, i) {
-					return function() {
-						infowindow.setContent('<img src="' + locations[i].img_uri + '">');
-						infowindow.open(map, marker);
-					}
-				})(marker, i));
+        // NOTE use tasks[i] explicitly
+        google.maps.event.addListener(marker, 'click', (function(marker, i) {
+                return function() {
+                    infowindow.setContent(getTaskContent(tasks[i]));
+                    infowindow.open(map, marker);
+                }
+            })(marker, i));
 
-			var circleOptions = {
-				strokeColor: '#F59000',
-				strokeOpacity: 0.3,
-				strokeWeight: 1,
-				fillColor: '#F59000',
-				fillOpacity: 0.2,
-				map: map,
-				center: myLatLng,
-				radius: location.radius
-			};
-			var locationCircle = new google.maps.Circle(circleOptions);
-		}
-	}
+        var circleOptions = {
+            strokeColor: '#F59000',
+            strokeOpacity: 0.3,
+            strokeWeight: 1,
+            fillColor: '#F59000',
+            fillOpacity: 0.2,
+            map: map,
+            center: myLatLng,
+            radius: tasks[i].radius
+        };
+        var taskCircle = new google.maps.Circle(circleOptions);
+    }
+}
+
+function getTaskContent(task) {
+	var content = '<a href="'
+		+ task.img_uri
+		+ '" target="_blank"><img src="'
+		+ task.img_uri
+		+ '" height="300" width="300"></a><form method="post" action="answer?task_id='
+		+ task.id
+		+ '" enctype="application/json"><input type="text" name="answer"><input type="submit" value="Answer"></form>';
+
+	return content;
 }
 
 function getErrorMessage(error) {
@@ -147,9 +133,8 @@ function getErrorMessage(error) {
 
 function locError(error) {
 	var errorMessage = getErrorMessage(error);
-
 	// tell the user if the current position could not be located
-	alert("Error occured: " + errorMessage + "\nThe current position could not be found.\nPlease turn GPS on.");
+	alert("Error occurred: " + errorMessage + "\nThe current position could not be found.\nPlease turn GPS on.");
 }
 
 function errorCallback(error) {
@@ -180,6 +165,16 @@ function doFallback() {
 
 // current position of the user
 function setCurrentPosition(pos) {
+	var image = {
+		url: 'static/image/pegman.png',
+		size: new google.maps.Size(24, 24),
+		origin: new google.maps.Point(0,0),
+		anchor: new google.maps.Point(12, 24)
+	};
+	var shape = {
+		coords: [1, 1, 1, 20, 18, 20, 18 , 1],
+		type: 'poly'
+	};
 	currentPositionMarkerInfoWindow = new google.maps.InfoWindow({
 		content: '<p>You are here and I know</p><p>where to find your sweet ass</p>'
 	});
@@ -189,6 +184,8 @@ function setCurrentPosition(pos) {
 			pos.coords.latitude,
 			pos.coords.longitude
 		),
+		icon: image,
+		shape: shape,
 		animation: google.maps.Animation.DROP,
 		title: "Current Position"
 	});
