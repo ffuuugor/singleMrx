@@ -10,16 +10,29 @@ import tempfile
 import mimetypes
 import hashlib
 import time
+from auth import AuthController, require, SESSION_KEY
+from jinja2 import Environment, FileSystemLoader
+
+env = Environment(loader=FileSystemLoader('view'))
 mimetypes.init()
 
 class HelloWorld(object):
+
     @cherrypy.expose
+    @require()
     def index(self):
-        l = len(cherrypy.request.db.query(Game).all())
-        return "Hello world! %d" % l
+        tmpl = env.get_template('index.html')
+        return tmpl.render()
+
+    @cherrypy.expose
+    @require()
+    def admin(self):
+        tmpl = env.get_template('admin.html')
+        return tmpl.render()
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
+    @require()
     def task(self, id=None):
         query = cherrypy.request.db.query(Task, Point).join(Point)
         if id is not None:
@@ -35,6 +48,7 @@ class HelloWorld(object):
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
     @cherrypy.tools.allow(methods=['POST'])
+    @require()
     def answer(self, task_id):
         input_json = cherrypy.request.json
 
@@ -65,6 +79,7 @@ class HelloWorld(object):
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
     @cherrypy.tools.allow(methods=['POST'])
+    @require()
     def add_mrx_pos(self):
         input_json = cherrypy.request.json
 
@@ -81,6 +96,7 @@ class HelloWorld(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
+    @require()
     def get_exposed_pos(self):
         positions = cherrypy.request.db.query(MrXPos).filter(MrXPos.exposed == True).all()
         return [as_dict(x) for x in positions]
@@ -89,6 +105,7 @@ class HelloWorld(object):
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.allow(methods=['POST'])
+    @require()
     def use_task(self, task_id):
         task = cherrypy.request.db.query(Task).filter(Task.id == task_id).first()
 
@@ -107,6 +124,7 @@ class HelloWorld(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
+    @require()
     def upload(self, file, lat, lng, answer):
         extension = mimetypes.guess_extension(file.content_type.value)
         filename = hashlib.md5(str(time.time())).hexdigest() + extension

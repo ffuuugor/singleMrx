@@ -3,6 +3,7 @@ import cherrypy
 import os
 from cp_sqlalchemy import SQLAlchemyTool, SQLAlchemyPlugin
 from app.models import Base
+from app.auth import AuthController
 
 def http_methods_allowed(methods=['GET', 'HEAD']):
     method = cherrypy.request.method.upper()
@@ -24,12 +25,16 @@ if __name__ == '__main__':
     cherrypy.tools.db = SQLAlchemyTool()
     cherrypy.tools.allow = cherrypy.Tool('on_start_resource', http_methods_allowed)
 
-    SQLAlchemyPlugin(
+    plugin = SQLAlchemyPlugin(
         cherrypy.engine, Base, cherrypy.config["mrx.db.uri"]
-    ).subscribe()
+    )
+
+    plugin.create()
+    plugin.subscribe()
 
     from app.simpleserver import HelloWorld
     cherrypy.tree.mount(HelloWorld(), '/', 'app.conf')
+    cherrypy.tree.mount(AuthController(), '/auth', 'app.conf')
 
     cherrypy.engine.start()
     cherrypy.engine.block()

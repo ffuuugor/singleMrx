@@ -8,6 +8,15 @@ from datetime import datetime
 
 Base = declarative_base()
 
+class User(Base):
+    __tablename__ = 'u'
+    __table_args__ = {'schema': 'mrx'}
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    username = Column("username", String, primary_key=True)
+    password = Column("password", String)
+    phone = Column("phone", String)
+
 class Game(Base):
     __tablename__ = 'game'
     __table_args__ = {'schema': 'mrx'}
@@ -24,7 +33,7 @@ class Task(Base):
     center_lat = Column("center_lat", Float)
     center_lng = Column("center_lng", Float)
     radius = Column("radius", Float)
-    status = Column("status", Enum("open","done","closed"))
+    status = Column("status", Enum("open","done","closed", name="task_status"))
 
     point = relationship("Point", backref="photo_point")
 
@@ -69,6 +78,4 @@ def as_dict(model, columns=None):
             ret[key] = str(ret[key])
 
     return ret
-
-
 

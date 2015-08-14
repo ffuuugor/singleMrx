@@ -5,6 +5,10 @@ html, body {
 
 html, body, #map-canvas {
     height: 80%;
-    margin-bottom: 20px;
+    /*margin-bottom: 20px;*/
     padding: 0px;
+}
+
+#myForm {
+	padding: 40px;
 }
