@@ -2,7 +2,7 @@ __author__ = 'ffuuugor'
 import cherrypy
 import os
 import sys
-from models import Game, Task, Point, MrXPos, as_dict
+from models import Game, Task, Point, as_dict
 import json
 import datetime
 import cgi
@@ -138,6 +138,13 @@ class HelloWorld(object):
         point = Point(lat=float(lat), lng=float(lng), answer=answer.split(','), img_uri=filename)
         cherrypy.request.db.add(point)
         cherrypy.request.db.commit()
+
+    @cherrypy.expose
+    def newgame(self,players=None,mrx_pos=None):
+        pass
+        # print cherrypy.request
+        # print arr
+        # print mrx
 
 
 

@@ -1,9 +1,13 @@
 __author__ = 'ffuuugor'
 import cherrypy
 import os
-from cp_sqlalchemy import SQLAlchemyTool, SQLAlchemyPlugin
+from app.db.sqlalchemy_plugin import SQLAlchemyPlugin
+from app.db.sqlalchemy_tool import SQLAlchemyTool
 from app.models import Base
 from app.auth import AuthController
+from app.api import Api
+from app.task_api import TaskApi
+from app.view import View
 
 def http_methods_allowed(methods=['GET', 'HEAD']):
     method = cherrypy.request.method.upper()
@@ -32,8 +36,9 @@ if __name__ == '__main__':
     plugin.create()
     plugin.subscribe()
 
-    from app.simpleserver import HelloWorld
-    cherrypy.tree.mount(HelloWorld(), '/', 'app.conf')
+    cherrypy.tree.mount(View(), '/', 'app.conf')
+    cherrypy.tree.mount(Api(), '/api', 'app.conf')
+    cherrypy.tree.mount(TaskApi(), '/api/task', 'app.conf')
     cherrypy.tree.mount(AuthController(), '/auth', 'app.conf')
 
     cherrypy.engine.start()

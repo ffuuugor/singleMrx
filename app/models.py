@@ -1,6 +1,6 @@
 __author__ = 'ffuuugor'
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.types import String, Integer, Float, Enum, DateTime, Boolean
+from sqlalchemy.types import String, Integer, Float, Enum, DateTime, Boolean, Time, Interval
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship, backref
@@ -13,7 +13,7 @@ class User(Base):
     __table_args__ = {'schema': 'mrx'}
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    username = Column("username", String, primary_key=True)
+    username = Column("username", String, unique=True)
     password = Column("password", String)
     phone = Column("phone", String)
 
@@ -22,9 +22,49 @@ class Game(Base):
     __table_args__ = {'schema': 'mrx'}
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
+    status = Column("status", Enum("new","active","finished", name="game_status", schema="mrx"))
+    code = Column("code", String)
+
+class Role(Base):
+    __tablename__ = 'role'
+    __table_args__ = {'schema': 'mrx'}
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    user_id = Column("user_id", Integer, ForeignKey("mrx.u.id"))
+    game_id = Column("gamr_id", Integer, ForeignKey("mrx.game.id"))
+    role = Column("role", Enum("detective","mrx", name="game_role", schema="mrx"))
+
+    game = relationship(Game, backref="roles")
+    user = relationship(User, backref="roles")
+
+class Location(Base):
+    __tablename__ = 'location'
+    __table_args__ = {'schema': 'mrx'}
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    user_id = Column("user_id", Integer, ForeignKey("mrx.u.id"))
+    game_id = Column("game_id", Integer, ForeignKey("mrx.game.id"))
+    lat = Column("lat", Float)
+    lng = Column("lng", Float)
+    time = Column("time", DateTime)
+
+    game = relationship(Game)
 
 class Task(Base):
     __tablename__ = 'task'
+    __table_args__ = {'schema': 'mrx'}
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    game_id = Column("game_id", Integer, ForeignKey("mrx.game.id"))
+    status = Column("status", Enum("unavailable", "pending", "requested",
+                                   "active", "cancelled", "completed", name="task_status", schema="mrx"))
+    request_time = Column("request_time", DateTime)
+    walk_time = Column("walk_time", Interval)
+
+    game = relationship("Game")
+
+class Crime(Base):
+    __tablename__ = 'crime'
     __table_args__ = {'schema': 'mrx'}
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
@@ -33,9 +73,15 @@ class Task(Base):
     center_lat = Column("center_lat", Float)
     center_lng = Column("center_lng", Float)
     radius = Column("radius", Float)
-    status = Column("status", Enum("open","done","closed", name="task_status"))
+    status = Column("status", Enum("not_commited","commited","solved", name="crime_status", schema="mrx"))
+    commit_time = Column("commit_time", DateTime)
 
-    point = relationship("Point", backref="photo_point")
+    mrx_task_id = Column("mrx_task_id", Integer, ForeignKey("mrx.task.id"))
+    det_task_id = Column('det_task_id', Integer, ForeignKey("mrx.task.id"))
+
+    point = relationship("Point")
+    mrx_task = relationship("Task", foreign_keys=mrx_task_id)
+    det_task = relationship("Task", foreign_keys=det_task_id)
 
 class Point(Base):
     __tablename__ = 'photo_point'
@@ -44,22 +90,9 @@ class Point(Base):
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     lat = Column("lat", Float)
     lng = Column("lng", Float)
+    radius = Column("radius", Float)
     img_uri = Column("img_uri", String)
     answer = Column("answer", ARRAY(String))
-
-class MrXPos(Base):
-    __tablename__ = 'mrx_pos'
-    __table_args__ = {'schema': 'mrx'}
-
-    id = Column("id", Integer, primary_key=True, autoincrement=True)
-    lat = Column("lat", Float)
-    lng = Column("lng", Float)
-    time = Column("time", DateTime)
-    exposed = Column("exposed", Boolean)
-
-    game_id = Column("game_id", Integer, ForeignKey("mrx.game.id"))
-
-
 
 def as_dict(model, columns=None):
 
