@@ -15,14 +15,12 @@ html, body, #map-canvas {
     overflow: hidden; /* This is the hack to hide Google's links in the bottom of the map */
 }
 
+.row {
+	margin: 0;
+}
+
 .status-bar {
 	background-color: #3b3b3b;
-}
-.status-bar .container {
-	padding-left: 30px;
-	padding-right: 30px;
-	padding-top: 10px;
-	padding-bottom: 10px;
 }
 
 .status-bar .val {
@@ -35,13 +33,13 @@ html, body, #map-canvas {
 
 .hunt-bar .container {
 	text-align: center;
-	padding: 20px;
 }
 
 .container {
 	color: #fff;
     font-family: 'Open Sans', sans-serif;
     font-size: 20px;
+    padding: 20px;
 }
 .hunt-bar {
 	background-color: #ff0000;
