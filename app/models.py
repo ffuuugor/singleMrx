@@ -23,6 +23,8 @@ class Game(Base):
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     status = Column("status", Enum("new","active","finished", name="game_status", schema="mrx"))
+    start = Column("start", DateTime)
+    duration = Column("duration", Interval)
     code = Column("code", String)
 
 class Role(Base):

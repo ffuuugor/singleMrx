@@ -48,14 +48,38 @@ class Api(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
+    def hunt_status(self, game_id = None):
+        if game_id is None:
+            user, role, game, all_tasks = get_session_info()
+            game_id = game.id
+
+        gap = self.get_gap(game_id)
+        delta = self.get_delta(game_id)
+
+        return {"hunt_active":delta <= gap}
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
     def game_status(self, game_id = None):
         if game_id is None:
             user, role, game, all_tasks = get_session_info()
             game_id = game.id
 
-        game = cherrypy.request.db.query(Game).filter(Game.id == game_id)
+        game = cherrypy.request.db.query(Game).filter(Game.id == game_id).one()
 
-        return {"game_status":game.status}
+        ret = {}
+        if game.start + game.duration > datetime.now():
+            remaining = (game.start + game.duration - datetime.now()).seconds
+            ret["remaining"] = remaining
+        else:
+            game.status = "finished"
+
+        ret["game_status"] = game.status
+
+        cherrypy.request.db.add(game)
+        cherrypy.request.db.commit()
+
+        return ret
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -128,7 +152,7 @@ class Api(object):
         mrx_username = players[int(mrx_pos)]
 
         try:
-            game = Game(status="active", code=code)
+            game = Game(status="active", code=code, start=datetime.now(), duration=timedelta(hours=2, minutes=30))
             cherrypy.request.db.add(game)
 
             #create roles
