@@ -20,7 +20,7 @@ mimetypes.init()
 class View(object):
 
     @cherrypy.expose
-    # @require()
+    @require()
     def index(self):
         user, role, game, all_tasks = get_session_info()
 
