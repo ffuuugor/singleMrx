@@ -1,5 +1,6 @@
 var map,
-	currentPositionMarker;
+	currentPositionMarker,
+	mrxMarker;
 
 function takeTaskHandler(data) {
 	if (data.status == "success") {
@@ -180,7 +181,7 @@ function locError(error) {
 	alert("Error occurred: " + errorMessage + "\nThe current position could not be found.\nPlease turn GPS on.");
 }
 
-function displayPosition(lat, lng, isPanTo, isMrx) {
+function createNewMarker(lat, lng, isPanTo, isMrx) {
 	var imgUrl;
 	if (isMrx) {
 		imgUrl = 'static/image/pegman.png';
@@ -200,45 +201,36 @@ function displayPosition(lat, lng, isPanTo, isMrx) {
 		coords: [1, 1, 1, 50, 40, 50, 40 , 1],
 		type: 'poly'
 	};
+
+	var marker = map.addMarker({
+		lat: lat,
+		lng: lng,
+		icon: image
+	});
 		
 	if (isPanTo) {
-		currentPositionMarker = map.addMarker({
-			lat: lat,
-			lng: lng,
-			icon: image
-		});
 		map.panTo(new google.maps.LatLng(
 				lat,
 				lng
 			));
-
-		watchCurrentPosition();
-	}	
-}
-
-function sendAndDisplay(isFirstTime) {
-	return function(position) {
-		$.ajax({
-			type: "POST",
-			url: "/api/send_location",
-			data: {
-				lat: position.coords.latitude,
-				lng: position.coords.longitude
-			}
-			});
-
-		// set current position
-		displayPosition(position.coords.latitude, position.coords.longitude, isFirstTime, false);
 	}
 
-	// watch position
-	// watchCurrentPosition();
+	return marker;	
 }
 
-function handleGeoposition(isFirstTime) {
+function handleSendGeoposition() {
 	if (navigator.geolocation) {
 		navigator.geolocation.getCurrentPosition(
-			sendAndDisplay(isFirstTime),
+			function(position) {
+				$.ajax({
+					type: "POST",
+					url: "/api/send_location",
+					data: {
+						lat: position.coords.latitude,
+						lng: position.coords.longitude
+					}
+					});
+			},
 			locError,
 			{
 				timeout: 10000,
@@ -275,7 +267,15 @@ function updateStatusBar() {
 
 	        		console.log(data);
 	        		if (data.hasOwnProperty("lat")) {
-	        			displayPosition(data.lat, data.lng, false, true)
+	        			if (mrxMarker == undefined) {
+	        				mrxMarker = createNewMarker(data.lat, data.lng, false, true)
+	        			} else {
+	        				mrxMarker.setPosition(
+								new google.maps.LatLng(
+									data.lat,
+									data.lng)
+							);
+	        			}
 	        		}
 	        	}
 		    }
@@ -305,30 +305,23 @@ function errorCallback(error) {
 function watchCurrentPosition() {
 	var positionTimer = navigator.geolocation.watchPosition(
 		function (position) {
-			setMarkerPosition(
-				currentPositionMarker,
-				position
-			);
+			if (currentPositionMarker == undefined) {
+				currentPositionMarker = createNewMarker(position.coords.latitude, position.coords.longitude, true, false);
+			} else {
+				currentPositionMarker.setPosition(
+					new google.maps.LatLng(
+						position.coords.latitude,
+						position.coords.longitude)
+				);
+			}
 		},
 		errorCallback,
 		{
 			timeout: 1000,
 			enableHighAccuracy: true,
 			maximumAge: Infinity
-	
-
 		});
 }
-
-function setMarkerPosition(marker, position) {
-	marker.setPosition(
-		new google.maps.LatLng(
-			position.coords.latitude,
-			position.coords.longitude)
-	);
-}
-
-
 
 var main = function () {
 
@@ -367,11 +360,13 @@ var main = function () {
 		  	lng: 37.620041
 			});
 
-	handleGeoposition(true);
-	setInterval(function() {handleGeoposition(false)}, 30000);
+	handleSendGeoposition(true);
+	setInterval(function() {handleSendGeoposition(false)}, 30000);
 
 	updateStatusBar();
 	setInterval(updateStatusBar, 30000);
+
+	watchCurrentPosition();
 }
 
 

@@ -7,7 +7,7 @@ from utils import get_session_info
 from sqlalchemy import or_
 
 CRIME_EXPOSURE_TIME = timedelta(minutes=2)
-START_HANDICAP = 3
+START_HANDICAP = 0
 
 class TaskApi(object):
 
