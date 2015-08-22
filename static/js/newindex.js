@@ -1,4 +1,5 @@
-var map;
+var map,
+	currentPositionMarker;
 
 function takeTaskHandler(data) {
 	if (data.status == "success") {
@@ -199,19 +200,19 @@ function displayPosition(lat, lng, isPanTo, isMrx) {
 		coords: [1, 1, 1, 50, 40, 50, 40 , 1],
 		type: 'poly'
 	};
-
-
-	var marker = map.addMarker({
-		lat: lat,
-		lng: lng,
-		icon: image
-	});
 		
 	if (isPanTo) {
+		currentPositionMarker = map.addMarker({
+			lat: lat,
+			lng: lng,
+			icon: image
+		});
 		map.panTo(new google.maps.LatLng(
 				lat,
 				lng
 			));
+
+		watchCurrentPosition();
 	}	
 }
 
@@ -281,6 +282,53 @@ function updateStatusBar() {
 	});
 
 }
+
+function errorCallback(error) {
+	var errorMessage = getErrorMessage(error);
+
+	if (error.TIMEOUT) {
+		// Acquire a new position object.
+		navigator.geolocation.getCurrentPosition(
+			watchCurrentPosition,
+			errorCallback,
+			{
+				timeout: 1000,
+				enableHighAccuracy: true,
+				maximumAge: Infinity
+			});
+	}
+
+	// tell the user if the current position could not be located
+	console.log("Error occured: " + errorMessage);
+}
+
+function watchCurrentPosition() {
+	var positionTimer = navigator.geolocation.watchPosition(
+		function (position) {
+			setMarkerPosition(
+				currentPositionMarker,
+				position
+			);
+		},
+		errorCallback,
+		{
+			timeout: 1000,
+			enableHighAccuracy: true,
+			maximumAge: Infinity
+	
+
+		});
+}
+
+function setMarkerPosition(marker, position) {
+	marker.setPosition(
+		new google.maps.LatLng(
+			position.coords.latitude,
+			position.coords.longitude)
+	);
+}
+
+
 
 var main = function () {
 
