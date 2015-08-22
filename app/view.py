@@ -24,6 +24,9 @@ class View(object):
     def index(self):
         user, role, game, all_tasks = get_session_info()
 
+        if game is None:
+            return "No active or scheduled games"
+
         if game.status == "active":
             tmpl = env.get_template('newindex.html')
         else:
