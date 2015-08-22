@@ -107,7 +107,7 @@ class Api(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    @require
+    @require()
     @cherrypy.tools.allow(methods=['POST'])
     def submit_mrx_code(self, code):
         user, role, game, all_tasks = get_session_info()
@@ -129,7 +129,7 @@ class Api(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    @require
+    @require()
     def mrx_pos(self):
         user, role, game, all_tasks = get_session_info()
 
@@ -149,7 +149,7 @@ class Api(object):
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.allow(methods=['POST'])
-    @require
+    @require()
     def send_location(self, lat, lng):
         user, role, game, all_tasks = get_session_info()
 

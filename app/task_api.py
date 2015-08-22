@@ -70,7 +70,7 @@ class TaskApi(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    @require
+    @require()
     @cherrypy.tools.allow(methods=['POST'])
     def take(self, id):
         try:
@@ -100,7 +100,7 @@ class TaskApi(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    @require
+    @require()
     @cherrypy.tools.allow(methods=['POST'])
     def cancel(self, id):
         user, role, game, all_tasks = get_session_info()
@@ -117,7 +117,7 @@ class TaskApi(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    @require
+    @require()
     @cherrypy.tools.allow(methods=['POST'])
     def answer(self, id, answer):
         user, role, game, all_tasks = get_session_info()
