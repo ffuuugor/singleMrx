@@ -12,6 +12,7 @@ import hashlib
 import time
 from auth import AuthController, require, SESSION_KEY
 from jinja2 import Environment, FileSystemLoader
+from utils import get_session_info
 
 env = Environment(loader=FileSystemLoader('view'))
 mimetypes.init()
@@ -21,7 +22,13 @@ class View(object):
     @cherrypy.expose
     # @require()
     def index(self):
-        tmpl = env.get_template('index.html')
+        user, role, game, all_tasks = get_session_info()
+
+        if game.status == "active":
+            tmpl = env.get_template('newindex.html')
+        else:
+            tmpl = env.get_template('gameover.html')
+
         return tmpl.render()
 
     @cherrypy.expose

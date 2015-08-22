@@ -4,8 +4,10 @@ from models import Game, User, Role, Point, Crime, Task, as_dict
 from auth import SESSION_KEY, require
 from datetime import datetime, timedelta
 from utils import get_session_info
+from sqlalchemy import or_
 
 CRIME_EXPOSURE_TIME = timedelta(minutes=2)
+START_HANDICAP = 3
 
 class TaskApi(object):
 
@@ -26,7 +28,10 @@ class TaskApi(object):
                 cherrypy.request.db.commit()
 
         if task.status == "active":
-            one["img_url"] = point.img_uri
+            if point.img_uri.startswith("http://") or point.img_uri.startswith("https://"):
+                one["img_url"] = point.img_uri
+            else:
+                one["img_url"] = "static/image/uploads/%s" % point.img_uri
 
         one["task_status"] = task.status
 
@@ -35,7 +40,7 @@ class TaskApi(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    # @require()
+    @require()
     def list(self):
         user, role, game, all_tasks = get_session_info()
 
@@ -45,23 +50,28 @@ class TaskApi(object):
                 ret.append(self.make_one_task(crime,task,point))
 
         elif role.role == "detective":
-            for task, crime, point in all_tasks:
-                if crime.status not in ("commited", "solved"):
-                    continue
+            #manage start handicap
+            commited_cnt = cherrypy.request.db.query(Crime).filter(Crime.game_id == game.id)\
+                .filter(or_(Crime.status == "commited", Crime.status == "solved")).count()
 
-                if crime.status == "commited" and \
-                    crime.commit_time + CRIME_EXPOSURE_TIME > datetime.now():
-                    continue
+            if commited_cnt > START_HANDICAP:
+                for task, crime, point in all_tasks:
+                    if crime.status not in ("commited", "solved"):
+                        continue
 
-                ret.append(self.make_one_task(crime,task,point))
+                    if crime.status == "commited" and \
+                        crime.commit_time + CRIME_EXPOSURE_TIME > datetime.now():
+                        continue
+
+                    ret.append(self.make_one_task(crime,task,point))
 
         cherrypy.request.db.commit()
         return ret
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    # @require
-    # @cherrypy.tools.allow(methods=['POST'])
+    @require
+    @cherrypy.tools.allow(methods=['POST'])
     def take(self, id):
         try:
             user, role, game, all_tasks = get_session_info()
@@ -90,8 +100,8 @@ class TaskApi(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    # @require
-    # @cherrypy.tools.allow(methods=['POST'])
+    @require
+    @cherrypy.tools.allow(methods=['POST'])
     def cancel(self, id):
         user, role, game, all_tasks = get_session_info()
 
@@ -107,8 +117,8 @@ class TaskApi(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    # @require
-    # @cherrypy.tools.allow(methods=['POST'])
+    @require
+    @cherrypy.tools.allow(methods=['POST'])
     def answer(self, id, answer):
         user, role, game, all_tasks = get_session_info()
         task, crime, point = filter(lambda x: x[1].id == int(id), all_tasks)[0]

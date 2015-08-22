@@ -4,19 +4,29 @@ from models import Game, User, Role, Point, Crime, Task, Location, as_dict
 from auth import SESSION_KEY, require
 from datetime import datetime, timedelta
 from utils import get_session_info
+from sqlalchemy import or_
 
 CRIME_EXPOSURE_TIME = timedelta(minutes=2)
 
 class Api(object):
 
     def get_delta(self, game_id):
-        commited = cherrypy.request.db.query(Crime).filter(Crime.game_id == game_id)\
+        cnt = cherrypy.request.db.query(Crime).filter(Crime.game_id == game_id)\
             .filter(Crime.status == "commited").count()
 
-        solved = cherrypy.request.db.query(Crime).filter(Crime.game_id == game_id)\
+        return cnt
+
+    def get_solved(self, game_id):
+        cnt = cherrypy.request.db.query(Crime).filter(Crime.game_id == game_id)\
             .filter(Crime.status == "solved").count()
 
-        return commited - solved
+        return cnt
+
+    def get_commited(self, game_id):
+        cnt = cherrypy.request.db.query(Crime).filter(Crime.game_id == game_id)\
+            .filter(or_(Crime.status == "commited", Crime.status == "solved")).count()
+
+        return cnt
 
     def get_gap(self, game_id):
         #TODO implement gap change logic
@@ -25,7 +35,6 @@ class Api(object):
         next_gap_time = timedelta(minutes=10)
 
         return gap, next_gap, next_gap_time
-
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -53,10 +62,25 @@ class Api(object):
             user, role, game, all_tasks = get_session_info()
             game_id = game.id
 
-        gap = self.get_gap(game_id)
+        gap, dummy1, dummy2 = self.get_gap(game_id)
         delta = self.get_delta(game_id)
 
-        return {"hunt_active":delta <= gap}
+        solved_cnt = self.get_solved(game_id)
+
+        if delta <= gap and solved_cnt > 0:
+            user, role, game, all_tasks = get_session_info()
+
+            if role.role == "mrx":
+                return {"hunt_active":True}
+            else:
+                loc = cherrypy.request.db.query(Location).join(Game)\
+                    .join(Role, Role.user_id == Location.user_id)\
+                    .filter(Game.id == game_id)\
+                    .filter(Role.role == "mrx").order_by(Location.time.desc()).all()[0]
+
+                return {"hunt_active":True, "lat":loc.lat, "lng":loc.lng, "time":str(loc.time)}
+        else:
+            return {"hunt_active":False}
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -83,8 +107,8 @@ class Api(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    # @require
-    # @cherrypy.tools.allow(methods=['POST'])
+    @require
+    @cherrypy.tools.allow(methods=['POST'])
     def submit_mrx_code(self, code):
         user, role, game, all_tasks = get_session_info()
 
@@ -105,7 +129,7 @@ class Api(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    # @require
+    @require
     def mrx_pos(self):
         user, role, game, all_tasks = get_session_info()
 
@@ -124,8 +148,8 @@ class Api(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    # @cherrypy.tools.allow(methods=['POST'])
-    # @require
+    @cherrypy.tools.allow(methods=['POST'])
+    @require
     def send_location(self, lat, lng):
         user, role, game, all_tasks = get_session_info()
 

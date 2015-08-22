@@ -1,15 +1,16 @@
 __author__ = 'ffuuugor'
 import cherrypy
 from app.models import *
+from auth import SESSION_KEY
 
 def get_session_info():
-    # username = cherrypy.session.get(SESSION_KEY)
-    username = 'ttt'
+    username = cherrypy.session.get(SESSION_KEY)
 
     user = cherrypy.request.db.query(User).filter(User.username == username).one()
-    role = cherrypy.request.db.query(Role).join(Game.roles).filter(
-        Game.status == "active").filter(Role.user_id == user.id).one()
-    game = cherrypy.request.db.query(Game).filter(Game.id == role.game_id).one()
+    role, game = cherrypy.request.db.query(Role, Game).join(Game.roles)\
+        .filter(Role.user_id == user.id)\
+        .order_by(Game.start.desc())\
+        .all()[0]
 
     if role.role == "mrx":
         all_tasks = cherrypy.request.db.query(Task, Crime, Point)\

@@ -7,12 +7,37 @@ html, body {
     padding: 0;
 }
 
-html, body, #map-canvas {
+html, body {
     width: 100%;
     height: 100%;
     margin: 0;
     padding: 0;
-    overflow: hidden; /* This is the hack to hide Google's links in the bottom of the map */
+    /*overflow: hidden;*/
+}
+
+.task-timer {
+    display: none;
+}
+
+.nav li {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+#map-canvas {
+    height: 400px;
+}
+
+#mapScreen {
+    padding: 10px;
+}
+
+.task-button {
+    padding-bottom: 5px;
+    display: none;
+}
+
+.answer-panel .row div {
+    padding: 5px;
 }
 
 .row {
@@ -27,8 +52,15 @@ html, body, #map-canvas {
 	display: inline;
 }
 
+.task-img {
+    padding: 10px; 
+    max-width:100%;
+    max-height:100%;
+}
+
 .hunt-bar {
 	display: none;
+    background-color: #ff0000;
 }
 
 .hunt-bar .container {
@@ -39,8 +71,5 @@ html, body, #map-canvas {
 	color: #fff;
     font-family: 'Open Sans', sans-serif;
     font-size: 20px;
-    padding: 20px;
-}
-.hunt-bar {
-	background-color: #ff0000;
+    padding: 10px;
 }
