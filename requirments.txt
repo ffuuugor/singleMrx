@@ -3,3 +3,5 @@ psycopg2
 cp_sqlalchemy
 sqlalchemy
 jinja2
+geopy
+LatLon

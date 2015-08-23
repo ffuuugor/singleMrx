@@ -22,8 +22,9 @@ class Game(Base):
     __table_args__ = {'schema': 'mrx'}
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    status = Column("status", Enum("new","active","finished", name="game_status", schema="mrx"))
+    status = Column("status", Enum("new", "mrx_active", "active","finished", name="game_status", schema="mrx"))
     start = Column("start", DateTime)
+    detective_start = Column("detective_start", DateTime)
     duration = Column("duration", Interval)
     code = Column("code", String)
 

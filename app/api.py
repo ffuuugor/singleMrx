@@ -5,7 +5,8 @@ from auth import SESSION_KEY, require
 from datetime import datetime, timedelta
 from utils import get_session_info
 from sqlalchemy import or_
-
+from LatLon import LatLon, Longitude, Latitude, GeoVector
+import random
 CRIME_EXPOSURE_TIME = timedelta(minutes=2)
 
 class Api(object):
@@ -92,7 +93,9 @@ class Api(object):
         game = cherrypy.request.db.query(Game).filter(Game.id == game_id).one()
 
         ret = {}
-        if game.start + game.duration > datetime.now():
+        if game.status == "mrx_active":
+            ret["remaining"] = game.duration.seconds
+        elif game.start + game.duration > datetime.now():
             remaining = (game.start + game.duration - datetime.now()).seconds
             ret["remaining"] = remaining
         else:
@@ -176,7 +179,7 @@ class Api(object):
         mrx_username = players[int(mrx_pos)]
 
         try:
-            game = Game(status="active", code=code, start=datetime.now(), duration=timedelta(hours=2, minutes=30))
+            game = Game(status="mrx_active", code=code, start=datetime.now(), duration=timedelta(hours=2, minutes=30))
             cherrypy.request.db.add(game)
 
             #create roles
@@ -212,11 +215,19 @@ class Api(object):
                 mrx_task = Task(game=game, status="pending")
                 det_task = Task(game=game, status="unavailable")
 
+                real_center = LatLon(Latitude(point.lat), Longitude(point.lng))
+                offset = GeoVector(initial_heading=random.randint(0,360),
+                                   distance=random.randint(0,point.radius)/1000.0)
+
+                print offset
+
+                task_center = real_center + offset
+
                 crime = Crime(
                     game_id=game.id,
                     point_id=point.id,
-                    center_lat=point.lat,
-                    center_lng=point.lng,
+                    center_lat=task_center.lat.decimal_degree,
+                    center_lng=task_center.lon.decimal_degree,
                     radius=point.radius,
                     status="not_commited",
                     mrx_task=mrx_task,

@@ -29,6 +29,11 @@ class View(object):
 
         if game.status == "active":
             tmpl = env.get_template('newindex.html')
+        elif game.status == "mrx_active":
+            if role.role == "mrx":
+                tmpl = env.get_template('newindex.html')
+            else:
+                tmpl = env.get_template('waitformrx.html')
         else:
             tmpl = env.get_template('gameover.html')
 

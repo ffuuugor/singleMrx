@@ -2,6 +2,19 @@ var map,
 	currentPositionMarker,
 	mrxMarker;
 
+Number.prototype.toHHMMSS = function () {
+    var sec_num = parseInt(this, 10); // don't forget the second param
+    var hours   = Math.floor(sec_num / 3600);
+    var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+    var seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+    if (hours   < 10) {hours   = "0"+hours;}
+    if (minutes < 10) {minutes = "0"+minutes;}
+    if (seconds < 10) {seconds = "0"+seconds;}
+    var time    = hours+':'+minutes+':'+seconds;
+    return time;
+}
+
 function takeTaskHandler(data) {
 	if (data.status == "success") {
 		alert("OK");
@@ -108,15 +121,17 @@ function handleTasks(data) {
 		$('#answerInput').removeAttr('disabled');
 		$('#cancelButton').removeAttr('disabled');
 		$('#cancelButton').off('click').click(function() {
-			$.ajax({
-				type: "POST",
-				url: "/api/task/cancel",
-				data: {id:activeTask.id},
-					success: function(data) {
-						location.reload();
-					},
-			 	dataType: "json"
-				});	
+			if (confirm("Are you sure? You won't be able to get back to this task in the furute")) {
+				$.ajax({
+					type: "POST",
+					url: "/api/task/cancel",
+					data: {id:activeTask.id},
+						success: function(data) {
+							location.reload();
+						},
+				 	dataType: "json"
+					});	
+			}
 		});
 		$('#answerButton').removeAttr('disabled');
 		$('#answerButton').off('click').click(function() {
@@ -205,7 +220,7 @@ function createNewMarker(lat, lng, isPanTo, isMrx) {
 	var marker = map.addMarker({
 		lat: lat,
 		lng: lng,
-		icon: image
+		icon: image,
 	});
 		
 	if (isPanTo) {
@@ -329,11 +344,15 @@ var main = function () {
 		    url: "/api/game_status",
 		    dataType: "json",
 	        success: function(data){
-	        	$('#timerDiv').countdown({
-	        		until: data.remaining, 
-	        		compact:true,
-	        		onExpiry: function() {location.reload()}
-	        	});
+	        	if (data.game_status == "active") {
+		        	$('#timerDiv').countdown({
+		        		until: data.remaining, 
+		        		compact:true,
+		        		onExpiry: function() {location.reload()}
+		        	});
+	        	} else {
+	        		$('#timerDiv').text(data.remaining.toHHMMSS())
+	        	}
 
 		    }
 	});
