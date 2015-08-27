@@ -15,6 +15,9 @@ def http_methods_allowed(methods=['GET', 'HEAD']):
         cherrypy.response.headers['Allow'] = ", ".join(methods)
         raise cherrypy.HTTPError(405)
 
+def CORS():
+    cherrypy.response.headers["Access-Control-Allow-Origin"] = "*"
+
 PATH = os.path.abspath(os.path.dirname(__file__))
 if __name__ == '__main__':
     cherrypy.config.update('app.conf')
@@ -28,6 +31,7 @@ if __name__ == '__main__':
 
     cherrypy.tools.db = SQLAlchemyTool()
     cherrypy.tools.allow = cherrypy.Tool('on_start_resource', http_methods_allowed)
+    cherrypy.tools.CORS = cherrypy.Tool('before_handler', CORS)
 
     plugin = SQLAlchemyPlugin(
         cherrypy.engine, Base, cherrypy.config["mrx.db.uri"]

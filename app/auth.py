@@ -2,7 +2,9 @@ __author__ = 'ffuuugor'
 
 import cherrypy
 import hashlib
-from models import User
+from models import User, Token
+import random
+import string
 from jinja2 import Environment, FileSystemLoader
 
 env = Environment(loader=FileSystemLoader('view'))
@@ -16,24 +18,39 @@ def check_credentials(username, password):
     try:
         user = cherrypy.request.db.query(User).filter(User.username == username).one()
         if hashpass(password) == user.password:
-            return None
+            return user
         else:
-            return "Wrong password"
+            return None
     except:
-        return "User not found"
+        return None
 
 def check_auth(*args, **kwargs):
-    conditions = cherrypy.request.config.get('auth.require', None)
-    if conditions is not None:
-        username = cherrypy.session.get(SESSION_KEY)
-        if username:
-            cherrypy.request.login = username
-            for condition in conditions:
-                # A condition is just a callable that returns true or false
-                if not condition():
-                    raise cherrypy.HTTPRedirect("/auth/login")
+    # if cherrypy.request.config.get('auth.require', None) is None:
+    #     return
+
+    token = cherrypy.request.params.get("token", None)
+
+    if token is not None:
+
+        cherrypy.request.params.pop("token", None)
+
+        usernames = cherrypy.request.db.query(Token).filter(Token.token == token).all()
+
+        if len(usernames) == 1:
+            cherrypy.request.login = usernames[0].user.username
+        elif len(usernames) > 1:
+            raise Exception()
         else:
             raise cherrypy.HTTPRedirect("/auth/login")
+        # username = cherrypy.session.get(SESSION_KEY)
+        # if username:
+        #     cherrypy.request.login = username
+        #     for condition in conditions:
+        #         # A condition is just a callable that returns true or false
+        #         if not condition():
+        #             raise cherrypy.HTTPRedirect("/auth/login")
+        # else:
+        #     raise cherrypy.HTTPRedirect("/auth/login")
 
 cherrypy.tools.auth = cherrypy.Tool('before_handler', check_auth)
 
@@ -65,16 +82,18 @@ class AuthController(object):
 
 
     @cherrypy.expose
+    @cherrypy.tools.json_out()
     def login(self, username=None, password=None):
-        if username is None or password is None:
-            return env.get_template('login.html').render()
-
-        error_msg = check_credentials(username, password)
-        if error_msg:
-            return env.get_template('login.html').render()
+        user = check_credentials(username, password)
+        if user is None:
+            return {"status":"fail"}
         else:
-            cherrypy.session[SESSION_KEY] = cherrypy.request.login = username
-            raise cherrypy.HTTPRedirect("/")
+            token = ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(32))
+
+            token_obj = Token(user=user, token=token)
+            cherrypy.request.db.add(token_obj)
+            cherrypy.request.db.commit()
+            return {"status":"success", "token":token}
 
     @cherrypy.expose
     def logout(self, from_page="/"):

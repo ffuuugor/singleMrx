@@ -4,7 +4,8 @@ from app.models import *
 from auth import SESSION_KEY
 
 def get_session_info():
-    username = cherrypy.session.get(SESSION_KEY)
+    # username = cherrypy.session.get(SESSION_KEY)
+    username = cherrypy.request.login
 
     user = cherrypy.request.db.query(User).filter(User.username == username).one()
     all_games = cherrypy.request.db.query(Role, Game).join(Game.roles)\

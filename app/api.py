@@ -95,7 +95,7 @@ class Api(object):
         ret = {}
         if game.status == "mrx_active":
             ret["remaining"] = game.duration.seconds
-        elif game.start + game.duration > datetime.now():
+        elif game.detective_start + game.duration > datetime.now():
             remaining = (game.start + game.duration - datetime.now()).seconds
             ret["remaining"] = remaining
         else:
