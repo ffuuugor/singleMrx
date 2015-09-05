@@ -1,6 +1,7 @@
 var authToken = "o2scv5nn7yq50dccovgnamxe9iubuqno"; //localStorage.getItem('authToken');
-var apiDomain = "http://127.0.0.1:8080";
 var map;
+var currentPositionMarker, mrxPositionMarker;
+var prevGeoSendTime = undefined;
 
 Number.prototype.toHHMMSS = function () {
     var sec_num = parseInt(this, 10); // don't forget the second param
@@ -13,6 +14,27 @@ Number.prototype.toHHMMSS = function () {
     if (seconds < 10) {seconds = "0"+seconds;}
     var time    = hours+':'+minutes+':'+seconds;
     return time;
+}
+
+function getErrorMessage(error) {
+
+    var errorMessage = "";
+    switch(error.code) {
+        case error.PERMISSION_DENIED:
+            errorMessage = "User denied the request for Geolocation.";
+            break;
+        case error.POSITION_UNAVAILABLE:
+            errorMessage = "Location information is unavailable.";
+            break;
+        case error.TIMEOUT:
+            errorMessage = "The request to get user location timed out.";
+            break;
+        case error.UNKNOWN_ERROR:
+            errorMessage = "An unknown error occurred.";
+            break;
+    }
+
+    return errorMessage;
 }
 
 function takeTaskHandler(data) {
@@ -47,7 +69,7 @@ function cancelButtonHandler(taskId) {
         if (confirm("Are you sure? You won't be able to get back to this task in the furute")) {
             $.ajax({
                 type: "POST",
-                url: apiDomain + "/api/task/cancel",
+                url: "/api/task/cancel",
                 data: {id:taskId, token: authToken},
                     success: function(data) {
                         location.reload();
@@ -88,7 +110,7 @@ function taskCircleCallback(taskId) {
         $('#takeTaskButton').off('click').click(function() {
             $.ajax({
                 type: "POST",
-                url: apiDomain + "/api/task/take",
+                url: "/api/task/take",
                 data: {id:taskId, token: authToken},
                 success: takeTaskHandler,
                 dataType: "json"
@@ -172,7 +194,7 @@ function handleTasks(data) {
 
 function updateTasks() {
     $.ajax({
-            url: apiDomain + "/api/task/list",
+            url: "/api/task/list",
             data: {token: authToken},
             dataType: "json",
             success: handleTasks
@@ -181,7 +203,7 @@ function updateTasks() {
 
 function updateStatusBar() {
     $.ajax({
-        url: apiDomain + "/api/game_status",
+        url: "/api/game_status",
         data: {token: authToken},
         dataType: "json",
         success: function(data){
@@ -199,7 +221,7 @@ function updateStatusBar() {
     });
 
     $.ajax({
-            url: apiDomain + "/api/gap",
+            url: "/api/gap",
             dataType: "json",
             data: {token: authToken},
             success: function(data){
@@ -207,7 +229,7 @@ function updateStatusBar() {
             }
     });
     $.ajax({
-            url: apiDomain + "/api/delta",
+            url: "/api/delta",
             dataType: "json",
             data: {token: authToken},
             success: function(data){
@@ -215,12 +237,24 @@ function updateStatusBar() {
             }
     });
     $.ajax({
-            url: apiDomain + "/api/hunt_status",
+            url: "/api/hunt_status",
             dataType: "json",
             data: {token: authToken},
             success: function(data) {
                 if (data.hunt_active) {
                     $('.hunt-bar').show();
+                    if (mrxPositionMarker == undefined) {
+                        mrxPositionMarker = createNewMarker(data.lat, data.lng, false);
+                    } else {
+                        currentPositionMarker.setPosition(
+                            new google.maps.LatLng(
+                                data.lat,
+                                data.lng)
+                        );
+                    }
+
+                } else {
+                    $('.hunt-bar').hide();
                 }
             }
     });
@@ -234,54 +268,104 @@ function initWithLogin() {
             });
 
     updateTasks();
+    setInterval(updateTasks, 30000);
     updateStatusBar();
+    setInterval(updateStatusBar, 30000);
 
     $('#codeButton').click(function() {
             $.ajax({
                 type: "POST",
-                url: apiDomain + "/api/submit_mrx_code",
+                url: "/api/submit_mrx_code",
                 data: {code:$('#codeInput').val(), token:authToken},
                 success: codeHandler,
                 dataType: "json"
                 }); 
         });
+
+    watchCurrentPosition()
 }
 
-var app = {
+function watchCurrentPosition() {
+    alert("trying geoposition");
+    var positionTimer = navigator.geolocation.watchPosition(
+        function (position) {
+            var currTime = (new Date()).getTime();
 
-    initialize: function() {
-        document.addEventListener('deviceready', this.onDeviceReady, false);
-    },
-    
-    onDeviceReady: function() {
-        console.log(authToken);
+            if (prevGeoSendTime == undefined || currTime - prevGeoSendTime > 10000) {
+                $.ajax({
+                    type: "POST",
+                    url: "/api/send_location",
+                    data: {lat: position.coords.latitude, lng: position.coords.longitude, token:authToken},
+                    dataType: "json"
+                });  
+                
+                prevGeoSendTime = currTime;  
+            }
 
-        document.body.style.marginTop = "20px";
-        if (authToken != undefined) {
-            initWithLogin();
-        } else {
-            $.mobile.pageContainer.pagecontainer("change", "#loginPage", {transition:"slide"});
+            if (currentPositionMarker == undefined) {
+                currentPositionMarker = createNewMarker(position.coords.latitude, position.coords.longitude, true);
+            } else {
+                currentPositionMarker.setPosition(
+                    new google.maps.LatLng(
+                        position.coords.latitude,
+                        position.coords.longitude)
+                );
+            }
+        },
+        function(error) {alert(getErrorMessage(error))},
+        {
+            timeout: 10000,
+            enableHighAccuracy: true,
+            maximumAge: Infinity
+        });
+}
 
-            $("#loginForm").on("submit",function(e) {
-            
-                $("#submitButton",this).attr("disabled","disabled");
-                var u = $("#username", this).val();
-                var p = $("#password", this).val();
-
-                if(u != '' && p!= '') {
-                    $.post(apiDomain + "/auth/login", {username:u,password:p}, function(data) {
-                        if (data.status == "success") {
-                            localStorage.setItem('authToken', data.token);
-                            authToken = data.token;
-                            $.mobile.pageContainer.pagecontainer("change", "#mainPage", {transition:"slide"});
-
-                            initWithLogin();
-                        }
-                    });
-                }
-            });
-        }
+function createNewMarker(lat, lng, isPanTo) {
+    var marker = map.addMarker({
+        lat: lat,
+        lng: lng
+    });
+        
+    if (isPanTo) {
+        map.panTo(new google.maps.LatLng(
+                lat,
+                lng
+            ));
     }
-};
+
+    return marker;  
+}
+    
+function init() {
+    console.log(authToken);
+    console.log((new Date()).getTime());
+    document.body.style.marginTop = "20px";
+    if (authToken != undefined) {
+        initWithLogin();
+    } else {
+        $.mobile.pageContainer.pagecontainer("change", "#loginPage", {transition:"slide"});
+
+        $("#loginForm").on("submit",function(e) {
+        
+            $("#submitButton",this).attr("disabled","disabled");
+            var u = $("#username", this).val();
+            var p = $("#password", this).val();
+
+            if(u != '' && p!= '') {
+                $.post("/auth/login", {username:u,password:p}, function(data) {
+                    if (data.status == "success") {
+                        localStorage.setItem('authToken', data.token);
+                        authToken = data.token;
+                        $.mobile.pageContainer.pagecontainer("change", "#mainPage", {transition:"slide"});
+
+                        initWithLogin();
+                    }
+                });
+            }
+        });
+    }
+}
+
+$document.ready(init);
 
 app.initialize();

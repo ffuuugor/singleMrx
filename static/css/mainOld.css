@@ -1,0 +1,75 @@
+html, body {
+    background-color: #3b3b3b;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    /*overflow: hidden;*/
+}
+
+.task-timer {
+    display: none;
+}
+
+.nav li {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+#map-canvas {
+    height: 400px;
+}
+
+#mapScreen {
+    padding: 10px;
+}
+
+.task-button {
+    padding-bottom: 5px;
+    display: none;
+}
+
+.answer-panel .row div {
+    padding: 5px;
+}
+
+.row {
+	margin: 0;
+}
+
+.status-bar {
+	background-color: #3b3b3b;
+}
+
+.status-bar .val {
+	display: inline;
+}
+
+.task-img {
+    padding: 10px; 
+    max-width:100%;
+    max-height:100%;
+}
+
+.hunt-bar {
+	display: none;
+    background-color: #ff0000;
+}
+
+.hunt-bar .container {
+	text-align: center;
+}
+
+.container {
+	color: #fff;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 20px;
+    padding: 10px;
+}
