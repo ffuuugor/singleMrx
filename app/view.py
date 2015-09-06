@@ -49,7 +49,7 @@ class View(object):
     @cherrypy.expose
     @cherrypy.tools.json_out()
     # @require()
-    def upload(self, file, lat, lng, answer):
+    def upload(self, file, lat, lng, answer, task_text, radius):
         extension = mimetypes.guess_extension(file.content_type.value)
         filename = hashlib.md5(str(time.time())).hexdigest() + extension
         filepath = os.path.join(cherrypy.config["mrx.uploads.dir"], filename)
@@ -59,7 +59,8 @@ class View(object):
         print >> f, data
         f.close()
 
-        point = Point(lat=float(lat), lng=float(lng), answer=answer.split(','), img_uri=filename)
+        point = Point(lat=float(lat), lng=float(lng), answer=answer.split(','),
+                      img_uri=filename, text=task_text, radius=radius)
         cherrypy.request.db.add(point)
         cherrypy.request.db.commit()
 

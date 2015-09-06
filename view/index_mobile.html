@@ -2,12 +2,13 @@
 <html>
 
 <head>
-    <meta name="viewport" content="width=320; user-scalable=no" />
+    <meta name='viewport' content='width=device-width, initial-scale=1, user-scalable=no'>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8">
     <meta http-equiv="Access-Control-Allow-Methods" content="GET, POST">
+    <link rel="shortcut icon" href="static/image/favicon.png" />
 
 
-    <link rel="stylesheet" href="jquery.mobile-1.4.5/jquery.mobile-1.4.5.css" type="text/css" charset="utf-8" />
+    <link rel="stylesheet" href="static/js/jquery.mobile-1.4.5/jquery.mobile-1.4.5.css" type="text/css" charset="utf-8" />
     <link rel="stylesheet" href="http://ququplay.github.io/jquery-mobile-flat-ui-theme/css/jquery.mobile.flatui.css" />
     <link rel="stylesheet" href="static/css/main.css" type="text/css" charset="utf-8" />
     
@@ -28,42 +29,46 @@
 
 <body>
 
-	<div id="mainPage" data-role="page" data-theme="b">
+	<div id="mainPage" data-role="page">
 
-        <div data-role="header" class="header">
-        	<div class="ui-grid-b">
-                <div class="ui-block-a" style="width:80%;">
-                    <div id="timerDiv">XX:XX:XX</div>
+        <div data-role="header">
+        	<div class="ui-grid-c">
+                
+                <div class="ui-block-a container" style="width:10%;">
+                    gap:<div id="gap">0</div>
                 </div>
-                <div class="ui-block-b" style="width:10%;">
-                    <div id="gap">0</div>
+                <div class="ui-block-b container" style="width:10%;">
+                    delta:<div id="delta">0</div>
                 </div>
-                <div class="ui-block-c" style="width:10%;">
-                    <div id="delta">0</div>
+                <div class="ui-block-c container" style="width:60%;">
+                    <div id="timerDiv" class="container">XX:XX:XX</div>
                 </div>
             </div>
+            <div><button class="ui-btn ui-btn-right ui-btn-inline container logoutButton">Logout</button></div>
         </div>
 
         <div data-role="content">
-            <div id="mushHuntBar"><div class="container">MUSH HUNT</div></div>
+            <div id="mushHuntBar"><div class="container">HUNT IS OPEN</div></div>
+            <div id="waitBar"><div class="container">Waiting for misterX</div></div>
             <div data-role="tabs" id="tabs">
 
                 <div data-role="navbar" id="navbar">
                     <ul>
-                        <li><a href="#mapTab" class="ui-btn ui-btn-active" data-ajax="false">Map</a></li>
-                        <li><a href="#taskTab" class="ui-btn" data-ajax="false">Task</a></li>
-                        <li><a href="#codeTab" class="ui-btn" data-ajax="false">Code</a></li>
+                        <li><a href="#mapTab" class="ui-btn ui-btn-active container" data-ajax="false">Map</a></li>
+                        <li><a href="#taskTab" class="ui-btn container" data-ajax="false">Task</a></li>
+                        <li><a href="#codeTab" id="codeTabBtn" class="ui-btn container" data-ajax="false">Code</a></li>
                     </ul>
                 </div>
 
                 <div id="mapTab" class="ui-content">
-                    <button id="takeTaskButton" class="ui-btn">Investigate</button>
+                    <button id="takeTaskButton" class="ui-btn container">Investigate</button>
                 	<div id="map-canvas"></div>
                 </div>
                 <div id="taskTab" class="ui-content">
                     <div id="taskTimerDiv"></div>
-                	<a id="taskImgLink" href=""><img id="taskImg" src=""></a>
+                	<a id="taskImgLink" href=""><img id="taskImg" class="mrxImg" src=""></a>
 
+                    <p id="taskText"></p>
 		            <input id='answerInput' type="text">
                     <button id="answerButton" class="ui-btn" disabled="">Answer</button>
                     <button id="cancelButton" class="ui-btn" disabled="">Cancel</button>
@@ -83,22 +88,54 @@
             <h1>Login</h1>
         </div>
         <div data-role="content">
-            <form id="loginForm">
-                <div data-role="fieldcontain" class="ui-hide-label">
-                    <label for="username">Username:</label>
-                    <input type="text" name="username" id="username" value="" placeholder="Username" />
-                </div>
+            <div data-role="fieldcontain" class="ui-hide-label">
+                <label for="username">Username:</label>
+                <input type="text" name="username" id="username" value="" placeholder="Username" />
+            </div>
 
-                <div data-role="fieldcontain" class="ui-hide-label">
-                    <label for="password">Password:</label>
-                    <input type="password" name="password" id="password" value="" placeholder="Password" />
-                </div>
+            <div data-role="fieldcontain" class="ui-hide-label">
+                <label for="password">Password:</label>
+                <input type="password" name="password" id="password" value="" placeholder="Password" />
+            </div>
+            <button class="ui-btn" id="loginButton">Login</button>
 
-                <input type="submit" value="Login" id="submitButton">
-            </form>
-
+            <div id="regLink"><a href="#registerPage" data-transition="slide" text-al>Register</a></div>
         </div>
+    </div>
 
+    <div id="registerPage" data-role="page">
+        <div data-role="header">
+            <h1>Register</h1>
+        </div>
+        <div data-role="content">
+            <div data-role="fieldcontain" class="ui-hide-label">
+                <label for="username">Username:</label>
+                <input type="text" name="username" id="regusername" value="" placeholder="Username" />
+            </div>
+
+            <div data-role="fieldcontain" class="ui-hide-label">
+                <label for="username">Phone:</label>
+                <input type="tel" name="phone" id="regphone" value="" placeholder="Phone" />
+            </div>
+
+            <div data-role="fieldcontain" class="ui-hide-label">
+                <label for="password">Password:</label>
+                <input type="password" name="password" id="regpassword" value="" placeholder="Password" />
+            </div>
+            <button class="ui-btn" id="regButton">Register</button>
+        </div>
+    </div>
+
+    <div id="gameoverPage" data-role="page">
+        <body bgcolor="#000000">
+        <img class="mrxImg" src="http://blog.check-and-secure.com/wp-content/uploads/2014/06/gameover.jpg">    
+    </div>
+
+    <div id="soonPage" data-role="page">
+        <button class="ui-btn ui-btn-inline ui-mini logoutButton">Logout</button>
+        <div class="jumbotron">
+            <div class="container">Soon...</div>  
+        </div>    
     </div>
 
 </body>

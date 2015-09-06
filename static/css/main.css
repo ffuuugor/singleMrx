@@ -1,5 +1,6 @@
+
 #mushHuntBar {
-	display: none;
+    display: none;
     font-family:'HelveticaNeue-Light', 'HelveticaNeue', Helvetica, Arial, sans-serif;
     font-size:12px;
     background-color: #ff0000;
@@ -7,16 +8,44 @@
     margin: 5px;
 }
 
+#waitBar {
+    display: none;
+    font-family:'HelveticaNeue-Light', 'HelveticaNeue', Helvetica, Arial, sans-serif;
+    font-size:12px;
+    background-color: #006699;
+    color: #ffffff;
+    text-align: center; 
+    margin: 5px;
+    ​text-shadow: none;
+}
+
+#mushHuntBar {
+   color: #ffffff;
+}
+
+#gameoverPage {
+    background-color: #000000;    
+}
+
 #map-canvas {
     height: 500px;
 }
 
-#taskImg {
+#mapTab {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.mrxImg {
     width  : 100%;
     height : auto;
 }
 
-#taskTab button{
+#tabs button{
+    padding-top:.40em;
+    padding-bottom:.40em;
+}
+ #loginPage button{
     padding-top:.40em;
     padding-bottom:.40em;
 }
@@ -26,25 +55,44 @@
     text-align: center;
 }
 
+#regLink {
+    text-align: center;
+}
+
 #takeTaskButton {
 	display: none;
 }
 
-#mainPage .header {
-	padding-top: 20px;
-}
-
 .container {
     font-family: 'Open Sans', sans-serif;
+    text-shadow: none;
     font-size:18px;
     text-align: center; 
     padding: 5px;
 }
 
-#taskImgLink {
-    display: none;
+.container {
+    font-family: 'Open Sans', sans-serif;
+    text-shadow: none;
+    font-size:12px;
+    text-align: center; 
+    padding: 5px;
 }
 
-#timerDiv {
-    padding-left: 10px;
+#soonPage {
+    background-image: url("/static/image/soonBig.jpg");
+    background-size: cover;
+    width: 100%;
+}
+
+#soonPage .container {
+    font-family:'HelveticaNeue-Light', 'HelveticaNeue', Helvetica, Arial, sans-serif;
+    background-image: url("/static/image/transparent.png");
+    font-size:46px; 
+    margin-top: 200px;
+    color: #eeeeee;   
+}
+
+#taskImgLink {
+    display: none;
 }

@@ -8,7 +8,7 @@ from sqlalchemy import or_
 from geopy.distance import vincenty
 
 CRIME_EXPOSURE_TIME = timedelta(minutes=2)
-START_HANDICAP = 0
+START_HANDICAP = 2
 
 class TaskApi(object):
 
@@ -49,6 +49,8 @@ class TaskApi(object):
                 one["img_url"] = point.img_uri
             else:
                 one["img_url"] = "static/image/uploads/%s" % point.img_uri
+
+            one["text"] = point.text;
 
         one["task_status"] = task.status
 

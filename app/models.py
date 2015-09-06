@@ -105,6 +105,7 @@ class Point(Base):
     lng = Column("lng", Float)
     radius = Column("radius", Float)
     img_uri = Column("img_uri", String)
+    text = Column("task_text", String)
     answer = Column("answer", ARRAY(String))
 
 def as_dict(model, columns=None):

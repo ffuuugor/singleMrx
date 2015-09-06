@@ -30,14 +30,18 @@ class Api(object):
         return cnt
 
     def get_gap(self, game_id):
-        #TODO implement gap change logic
-        gap = 2
-        next_gap = 3
-        next_gap_time = timedelta(minutes=10)
+        user, role, game, all_tasks = get_session_info()
 
-        return gap, next_gap, next_gap_time
+        gap = 0
+
+        if game.status == "active":
+            eta = (datetime.now() - game.detective_start).seconds
+            gap += eta/(60*30) # +1 every 20 minutes
+
+        return gap, None, None
 
     @cherrypy.expose
+    @require()
     @cherrypy.tools.json_out()
     def gap(self, game_id = None):
         if game_id is None:
@@ -45,9 +49,21 @@ class Api(object):
             game_id = game.id
 
         gap, next_gap, next_gap_time = self.get_gap(game_id)
-        return {"gap":gap, "next_gap":next_gap, "next_gap_time":next_gap_time.seconds}
+        return {"gap":gap}
 
     @cherrypy.expose
+    @require()
+    @cherrypy.tools.json_out()
+    def role(self):
+        user, role, game, all_tasks = get_session_info()
+
+        if role is None:
+            return {"status":"fail"}
+        else:
+            return {"status":"success", "role":role.role}
+
+    @cherrypy.expose
+    @require()
     @cherrypy.tools.json_out()
     def delta(self, game_id = None):
         if game_id is None:
@@ -57,6 +73,7 @@ class Api(object):
         return {"delta":self.get_delta(game_id)}
 
     @cherrypy.expose
+    @require()
     @cherrypy.tools.json_out()
     def hunt_status(self, game_id = None):
         if game_id is None:
@@ -84,19 +101,21 @@ class Api(object):
             return {"hunt_active":False}
 
     @cherrypy.expose
+    @require()
     @cherrypy.tools.json_out()
-    def game_status(self, game_id = None):
-        if game_id is None:
-            user, role, game, all_tasks = get_session_info()
-            game_id = game.id
+    def game_status(self):
+        user, role, game, all_tasks = get_session_info()
 
-        game = cherrypy.request.db.query(Game).filter(Game.id == game_id).one()
+        if game is None or (game.status == "finished"
+                            and (datetime.now() - game.detective_start).seconds > 60*60*5):
+            return {"game_status":"no"}
+
 
         ret = {}
         if game.status == "mrx_active":
             ret["remaining"] = game.duration.seconds
         elif game.detective_start + game.duration > datetime.now():
-            remaining = (game.start + game.duration - datetime.now()).seconds
+            remaining = (game.detective_start + game.duration - datetime.now()).seconds
             ret["remaining"] = remaining
         else:
             game.status = "finished"
@@ -168,6 +187,8 @@ class Api(object):
         cherrypy.request.db.commit()
 
         return {"status":"success"}
+
+
 
     @cherrypy.expose
     @cherrypy.tools.json_out()

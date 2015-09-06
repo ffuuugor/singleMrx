@@ -1,4 +1,5 @@
-var authToken = "o2scv5nn7yq50dccovgnamxe9iubuqno"; //localStorage.getItem('authToken');
+var authToken = localStorage.getItem('authToken');
+var role = undefined;
 var map;
 var currentPositionMarker, mrxPositionMarker;
 var prevGeoSendTime = undefined;
@@ -124,6 +125,11 @@ function handleTasks(data) {
     var activeTask = undefined;
     var requestedTask = undefined;
 
+    for (var i = 0; i < map.polygons.length; i++) {
+        polygon = map.polygons[i];
+        polygon.setOptions({map:null});   
+    }
+
     for (i = 0; i < data.length; i++) {
         var taskId = data[i].id;
 
@@ -163,6 +169,7 @@ function handleTasks(data) {
         $('#taskImgLink').show();
         $('#taskImg').attr("src",activeTask.img_url);
         $('#taskImgLink').attr("href",activeTask.img_url);
+        $('#taskText').text(activeTask.text);
         $('#cancelButton').removeAttr("disabled")
         $('#cancelButton').off('click').click(cancelButtonHandler(activeTask.id));
         $('#answerButton').removeAttr("disabled")
@@ -170,7 +177,7 @@ function handleTasks(data) {
             var answer = $('#answerInput').val();
             $.ajax({
                 type: "POST",
-                url: apiDomain + "/api/task/answer",
+                url: "/api/task/answer",
                 data: {id:activeTask.id, answer:answer, token: authToken},
                 success: answerHandler,
                 dataType: "json"
@@ -207,14 +214,27 @@ function updateStatusBar() {
         data: {token: authToken},
         dataType: "json",
         success: function(data){
+            console.log($.mobile.activePage.attr('id'))
             if (data.game_status == "active") {
                 $('#timerDiv').countdown({
                     until: data.remaining, 
                     compact:true,
                     onExpiry: function() {location.reload()}
                 });
-            } else {
+                $("#waitBar").hide();
+            } else if (data.game_status == "mrx_active") {
+                if (role != "mrx") {
+                    $("#waitBar").show();
+                }
                 $('#timerDiv').text(data.remaining.toHHMMSS())
+            } else if (data.game_status == "finished") {
+                if ($.mobile.activePage.attr('id') == "mainPage") {
+                    $.mobile.pageContainer.pagecontainer("change", "#gameoverPage", {transition:"slide"});   
+                }
+            } else {
+                if ($.mobile.activePage.attr('id') == "mainPage") {
+                    $.mobile.pageContainer.pagecontainer("change", "#soonPage");   
+                }
             }
 
         }
@@ -242,25 +262,61 @@ function updateStatusBar() {
             data: {token: authToken},
             success: function(data) {
                 if (data.hunt_active) {
-                    $('.hunt-bar').show();
-                    if (mrxPositionMarker == undefined) {
-                        mrxPositionMarker = createNewMarker(data.lat, data.lng, false);
-                    } else {
-                        currentPositionMarker.setPosition(
-                            new google.maps.LatLng(
-                                data.lat,
-                                data.lng)
-                        );
+                    $('#mushHuntBar').show();
+                    if (role != "mrx") {
+                        if (mrxPositionMarker == undefined) {
+                            mrxPositionMarker = createNewMarker(data.lat, data.lng, false, true);
+                        } else {
+                            currentPositionMarker.setPosition(
+                                new google.maps.LatLng(
+                                    data.lat,
+                                    data.lng)
+                            );
+                        }
                     }
 
                 } else {
-                    $('.hunt-bar').hide();
+                    $('#mushHuntBar').hide();
                 }
             }
     });
 }
 
 function initWithLogin() {
+    $.ajax({
+        url: "/api/game_status",
+        data: {token: authToken},
+        dataType: "json",
+        success: function(data){
+            if (data.game_status == "finished") {
+                if ($.mobile.activePage.attr('id') != "gameoverPage") {
+                    $.mobile.pageContainer.pagecontainer("change", "#gameoverPage", {transition:"slide"});   
+                }
+            } else if (data.game_status == "no") {
+                if ($.mobile.activePage.attr('id') != "soonPage") {
+                    $.mobile.pageContainer.pagecontainer("change", "#soonPage");   
+                }
+            }
+
+        }
+    });
+
+    $.ajax({
+        type: "POST",
+        url: "/api/role",
+        data: {token:authToken},
+        success: function(data) {
+            if (data.status == "success") {
+                role = data.role;
+                console.log(role);
+                initWithLoginAndRole();
+            }
+        },
+        dataType: "json"
+    }); 
+}
+
+function initWithLoginAndRole() {
     map = new GMaps({
             div: '#map-canvas',
             lat: 55.754365,
@@ -272,6 +328,9 @@ function initWithLogin() {
     updateStatusBar();
     setInterval(updateStatusBar, 30000);
 
+    if (role == "mrx") {
+        $("#codeTabBtn").addClass("ui-state-disabled");
+    }
     $('#codeButton').click(function() {
             $.ajax({
                 type: "POST",
@@ -286,7 +345,6 @@ function initWithLogin() {
 }
 
 function watchCurrentPosition() {
-    alert("trying geoposition");
     var positionTimer = navigator.geolocation.watchPosition(
         function (position) {
             var currTime = (new Date()).getTime();
@@ -303,7 +361,7 @@ function watchCurrentPosition() {
             }
 
             if (currentPositionMarker == undefined) {
-                currentPositionMarker = createNewMarker(position.coords.latitude, position.coords.longitude, true);
+                currentPositionMarker = createNewMarker(position.coords.latitude, position.coords.longitude, true, role=="mrx");
             } else {
                 currentPositionMarker.setPosition(
                     new google.maps.LatLng(
@@ -320,10 +378,25 @@ function watchCurrentPosition() {
         });
 }
 
-function createNewMarker(lat, lng, isPanTo) {
+function createNewMarker(lat, lng, isPanTo, isMrx) {
+    console.log(isMrx)
+    if (isMrx) {
+        imgUrl = 'static/image/pegman_mrx.png';
+    } else {
+        imgUrl = 'static/image/pegman_sherlock.png';
+    }
+    
+    var image = {
+        url: imgUrl,
+        size: new google.maps.Size(40, 50),
+        origin: new google.maps.Point(0,0),
+        anchor: new google.maps.Point(20, 25)
+    };
+
     var marker = map.addMarker({
         lat: lat,
-        lng: lng
+        lng: lng,
+        icon: image
     });
         
     if (isPanTo) {
@@ -340,32 +413,69 @@ function init() {
     console.log(authToken);
     console.log((new Date()).getTime());
     document.body.style.marginTop = "20px";
-    if (authToken != undefined) {
-        initWithLogin();
+
+    var soonImgUrl;
+    if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+        soonImgUrl = "/static/image/soon.jpg"
     } else {
-        $.mobile.pageContainer.pagecontainer("change", "#loginPage", {transition:"slide"});
+        soonImgUrl = "/static/image/soonBig.jpg"
+    }
+    console.log(navigator.userAgent);
+    $("#soonPage").css('background-image', 'url(' + soonImgUrl + ')')
 
-        $("#loginForm").on("submit",function(e) {
+    $(".logoutButton").click(function() {
+        console.log("logout")
+        localStorage.removeItem('authToken');   
         
-            $("#submitButton",this).attr("disabled","disabled");
-            var u = $("#username", this).val();
-            var p = $("#password", this).val();
+        location.reload(); 
+    })
 
+    $("#loginButton").click(function() {
+            var u = $("#username").val();
+            var p = $("#password").val();
+            
             if(u != '' && p!= '') {
                 $.post("/auth/login", {username:u,password:p}, function(data) {
+                    console.log(data);
                     if (data.status == "success") {
                         localStorage.setItem('authToken', data.token);
                         authToken = data.token;
                         $.mobile.pageContainer.pagecontainer("change", "#mainPage", {transition:"slide"});
 
                         initWithLogin();
+                    } else {
+                        alert("Wrong username or password");
                     }
                 });
             }
         });
+
+    $("#regButton").click(function() {
+        var u = $("#regusername").val();
+        var ph = $("#regphone").val();
+        var p = $("#regpassword").val();
+
+        $.post("/auth/register", {username:u,password:p,phone:ph}, function(data) {
+                console.log(data);
+                if (data.status == "success") {
+                    localStorage.setItem('authToken', data.token);
+                    authToken = data.token;
+                    $.mobile.pageContainer.pagecontainer("change", "#mainPage", {transition:"slide"});
+
+                    initWithLogin();
+                } else {
+                    alert("Registration failed");
+                }
+        });
+
+    });
+
+    if (authToken != undefined) {
+        console.log("Init with login")
+        initWithLogin();
+    } else {
+        $.mobile.pageContainer.pagecontainer("change", "#loginPage", {transition:"slide"});
     }
 }
 
-$document.ready(init);
-
-app.initialize();
+$(document).ready(init);

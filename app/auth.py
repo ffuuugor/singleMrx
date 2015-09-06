@@ -25,8 +25,8 @@ def check_credentials(username, password):
         return None
 
 def check_auth(*args, **kwargs):
-    # if cherrypy.request.config.get('auth.require', None) is None:
-    #     return
+    if cherrypy.request.config.get('auth.require', None) is None:
+        return
 
     token = cherrypy.request.params.get("token", None)
 
@@ -40,17 +40,6 @@ def check_auth(*args, **kwargs):
             cherrypy.request.login = usernames[0].user.username
         elif len(usernames) > 1:
             raise Exception()
-        else:
-            raise cherrypy.HTTPRedirect("/auth/login")
-        # username = cherrypy.session.get(SESSION_KEY)
-        # if username:
-        #     cherrypy.request.login = username
-        #     for condition in conditions:
-        #         # A condition is just a callable that returns true or false
-        #         if not condition():
-        #             raise cherrypy.HTTPRedirect("/auth/login")
-        # else:
-        #     raise cherrypy.HTTPRedirect("/auth/login")
 
 cherrypy.tools.auth = cherrypy.Tool('before_handler', check_auth)
 
@@ -69,16 +58,19 @@ def require(*conditions):
 class AuthController(object):
 
     @cherrypy.expose()
+    @cherrypy.tools.json_out()
     def register(self, username=None, phone=None, password=None):
-        if username is None or phone is None or password is None:
-            return env.get_template('register.html').render()
-        else:
+        try:
             user = User(username=username, phone=phone, password=hashpass(password))
 
             cherrypy.request.db.add(user)
             cherrypy.request.db.commit()
 
-            self.login(username=username, password=password)
+            return self.login(username=username, password=password)
+        except:
+            return {"status":"fail"}
+
+
 
 
     @cherrypy.expose
