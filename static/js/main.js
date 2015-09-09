@@ -143,18 +143,34 @@ function handleTasks(data) {
             case "completed": color = "#33CC33"; break;
         }
 
-        var circle = map.drawCircle({
-            id: data[i].id,
-            lat: data[i].lat,
-            lng: data[i].lng,
-            radius: data[i].radius,
-            strokeColor: color,
-            strokeOpacity: 0.5,
-            strokeWeight: 1,
-            fillColor: color,
-            fillOpacity: 0.2,
-            click: taskCircleCallback(data[i].id)
+        var circle;
+        if (data[i].task_status == "pending" || data[i].task_status == "requested") {
+            circle = map.drawCircle({
+                id: data[i].id,
+                lat: data[i].lat,
+                lng: data[i].lng,
+                radius: data[i].radius,
+                strokeColor: color,
+                strokeOpacity: 0.5,
+                strokeWeight: 1,
+                fillColor: color,
+                fillOpacity: 0.2,
+                click: taskCircleCallback(data[i].id)
+            });   
+        } else {
+            circle = map.drawCircle({
+                id: data[i].id,
+                lat: data[i].lat,
+                lng: data[i].lng,
+                radius: data[i].radius,
+                strokeColor: color,
+                strokeOpacity: 0.5,
+                strokeWeight: 1,
+                fillColor: color,
+                fillOpacity: 0.2
             });
+        }
+        
 
         if (data[i].task_status == "active") {
             activeTask = data[i];
