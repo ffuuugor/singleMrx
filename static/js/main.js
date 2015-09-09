@@ -300,6 +300,10 @@ function updateStatusBar() {
 
                 } else {
                     $('#mushHuntBar').hide();
+                    if (mrxPositionMarker != undefined) {
+                        mrxPositionMarker.setOptions({map:null});
+                        mrxPositionMarker = undefined;
+                    }
                 }
             }
     });
