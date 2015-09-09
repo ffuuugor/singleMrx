@@ -238,7 +238,6 @@ function updateStatusBar() {
         data: {token: authToken},
         dataType: "json",
         success: function(data){
-            console.log($.mobile.activePage.attr('id'))
             if (data.game_status == "active") {
                 $('#timerDiv').countdown({
                     until: data.remaining, 
@@ -332,7 +331,6 @@ function initWithLogin() {
         success: function(data) {
             if (data.status == "success") {
                 role = data.role;
-                console.log(role);
                 initWithLoginAndRole();
             }
         },
@@ -403,7 +401,6 @@ function watchCurrentPosition() {
 }
 
 function createNewMarker(lat, lng, isPanTo, isMrx) {
-    console.log(isMrx)
     if (isMrx) {
         imgUrl = 'static/image/pegman_mrx.png';
     } else {
@@ -434,8 +431,6 @@ function createNewMarker(lat, lng, isPanTo, isMrx) {
 }
     
 function init() {
-    console.log(authToken);
-    console.log((new Date()).getTime());
     document.body.style.marginTop = "20px";
 
     var soonImgUrl;
@@ -444,11 +439,9 @@ function init() {
     } else {
         soonImgUrl = "/static/image/soonBig.jpg"
     }
-    console.log(navigator.userAgent);
     $("#soonPage").css('background-image', 'url(' + soonImgUrl + ')')
 
     $(".logoutButton").click(function() {
-        console.log("logout")
         localStorage.removeItem('authToken');   
         
         location.reload(); 
@@ -460,7 +453,6 @@ function init() {
             
             if(u != '' && p!= '') {
                 $.post("/auth/login", {username:u,password:p}, function(data) {
-                    console.log(data);
                     if (data.status == "success") {
                         localStorage.setItem('authToken', data.token);
                         authToken = data.token;
@@ -480,7 +472,6 @@ function init() {
         var p = $("#regpassword").val();
 
         $.post("/auth/register", {username:u,password:p,phone:ph}, function(data) {
-                console.log(data);
                 if (data.status == "success") {
                     localStorage.setItem('authToken', data.token);
                     authToken = data.token;
@@ -495,7 +486,6 @@ function init() {
     });
 
     if (authToken != undefined) {
-        console.log("Init with login")
         initWithLogin();
     } else {
         $.mobile.pageContainer.pagecontainer("change", "#loginPage", {transition:"slide"});
