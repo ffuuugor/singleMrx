@@ -342,7 +342,9 @@ function initWithLoginAndRole() {
     map = new GMaps({
             div: '#map-canvas',
             lat: 55.754365,
-            lng: 37.620041
+            lng: 37.620041,
+            disableDefaultUI: true,
+            zoomControl: true
             });
 
     updateTasks();
