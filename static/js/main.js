@@ -397,10 +397,10 @@ function watchCurrentPosition() {
         {
             timeout: 10000,
             enableHighAccuracy: true,
-            maximumAge: Infinity
+            maximumAge: 1000
         });
     
-    setTimeout( function() { navigator.geolocation.clearWatch( positionTimer ); }, 5000 );
+    // setTimeout( function() { navigator.geolocation.clearWatch( positionTimer ); }, 5000 );
 }
 
 function createNewMarker(lat, lng, isPanTo, isMrx) {
