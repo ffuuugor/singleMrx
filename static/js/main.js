@@ -189,7 +189,7 @@ function handleTasks(data) {
     }
 
     if (activeTask != undefined) {
-        $('#taskTimerDiv').hide();
+        $('#taskTimerContainer').hide();
         $('#taskImgLink').show();
         $('#taskImg').attr("src",activeTask.img_url);
         $('#taskImgLink').attr("href",activeTask.img_url);
@@ -211,7 +211,7 @@ function handleTasks(data) {
 
     if (requestedTask != undefined) {
 
-        $('#taskTimerDiv').show();
+        $('#taskTimerContainer').show();
         $('#cancelButton').removeAttr("disabled")
         $('#cancelButton').off('click').click(cancelButtonHandler(requestedTask.id));
         $('#taskTimerDiv').countdown({
@@ -369,6 +369,7 @@ function initWithLoginAndRole() {
 function watchCurrentPosition() {
     var positionTimer = navigator.geolocation.watchPosition(
         function (position) {
+
             var currTime = (new Date()).getTime();
 
             if (prevGeoSendTime == undefined || currTime - prevGeoSendTime > 10000) {
@@ -398,6 +399,8 @@ function watchCurrentPosition() {
             enableHighAccuracy: true,
             maximumAge: Infinity
         });
+    
+    setTimeout( function() { navigator.geolocation.clearWatch( positionTimer ); }, 5000 );
 }
 
 function createNewMarker(lat, lng, isPanTo, isMrx) {

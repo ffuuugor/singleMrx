@@ -140,7 +140,7 @@ class Api(object):
         if game.status != "active":
             return {"status":"fail", "msg":"game is not active"}
 
-        if code == game.code:
+        if code.lower() == game.code.lower():
             game.status = 'finished'
             cherrypy.request.db.add(game)
             cherrypy.request.db.commit()
