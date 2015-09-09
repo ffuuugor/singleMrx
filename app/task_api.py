@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from utils import get_session_info
 from sqlalchemy import or_
 from geopy.distance import vincenty
+import logging
 
 CRIME_EXPOSURE_TIME = timedelta(minutes=2)
 START_HANDICAP = 2
@@ -141,6 +142,7 @@ class TaskApi(object):
     @require()
     @cherrypy.tools.allow(methods=['POST'])
     def answer(self, id, answer):
+        logging.log("Answering %s = %s" % (id, answer))
         user, role, game, all_tasks = get_session_info()
         task, crime, point = filter(lambda x: x[1].id == int(id), all_tasks)[0]
 

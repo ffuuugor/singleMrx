@@ -130,6 +130,12 @@ function handleTasks(data) {
         polygon.setOptions({map:null});   
     }
 
+    data.sort(function(a,b) {
+        return b.radius - a.radius;
+    });
+
+    console.log(data);
+
     for (i = 0; i < data.length; i++) {
         var taskId = data[i].id;
 
@@ -150,6 +156,7 @@ function handleTasks(data) {
                 lat: data[i].lat,
                 lng: data[i].lng,
                 radius: data[i].radius,
+                zIndex: i,
                 strokeColor: color,
                 strokeOpacity: 0.5,
                 strokeWeight: 1,
@@ -163,6 +170,7 @@ function handleTasks(data) {
                 lat: data[i].lat,
                 lng: data[i].lng,
                 radius: data[i].radius,
+                zIndex: i,
                 strokeColor: color,
                 strokeOpacity: 0.5,
                 strokeWeight: 1,
@@ -283,7 +291,7 @@ function updateStatusBar() {
                         if (mrxPositionMarker == undefined) {
                             mrxPositionMarker = createNewMarker(data.lat, data.lng, false, true);
                         } else {
-                            currentPositionMarker.setPosition(
+                            mrxPositionMarker.setPosition(
                                 new google.maps.LatLng(
                                     data.lat,
                                     data.lng)
@@ -318,7 +326,7 @@ function initWithLogin() {
     });
 
     $.ajax({
-        type: "POST",
+        type: "GET",
         url: "/api/role",
         data: {token:authToken},
         success: function(data) {
@@ -342,7 +350,7 @@ function initWithLoginAndRole() {
     updateTasks();
     setInterval(updateTasks, 30000);
     updateStatusBar();
-    setInterval(updateStatusBar, 30000);
+    setInterval(updateStatusBar, 10000);
 
     if (role == "mrx") {
         $("#codeTabBtn").addClass("ui-state-disabled");
@@ -357,7 +365,7 @@ function initWithLoginAndRole() {
                 }); 
         });
 
-    watchCurrentPosition()
+    watchCurrentPosition();
 }
 
 function watchCurrentPosition() {
