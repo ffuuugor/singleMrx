@@ -93,6 +93,7 @@ class Api(object):
             else:
                 loc = cherrypy.request.db.query(Location).join(Game)\
                     .join(Role, Role.user_id == Location.user_id)\
+                    .filter(Role.game_id == Game.id)\
                     .filter(Game.id == game_id)\
                     .filter(Role.role == "mrx").order_by(Location.time.desc()).all()[0]
 
