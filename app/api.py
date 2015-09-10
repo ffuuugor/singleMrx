@@ -162,6 +162,7 @@ class Api(object):
             return {"status":"declined", "msg":"too big delta"}
         else:
             loc = cherrypy.request.db.query(Location).join(Game).join(Role)\
+                .filter(Game.id == game.id).filter(Location.user_id == Role.user_id)\
                 .filter(Role.role == "mrx").order_by(Location.time.desc()).one()
 
             return {"status":"success", "lat":loc.lat, "lng":loc.lng, "time":loc.time}

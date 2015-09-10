@@ -62,6 +62,7 @@ class Location(Base):
     time = Column("time", DateTime)
 
     game = relationship(Game)
+    user = relationship(User)
 
 class Task(Base):
     __tablename__ = 'task'
