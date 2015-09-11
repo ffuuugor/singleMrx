@@ -71,11 +71,13 @@ function handleTasks(data) {
 
         var color;
 
-        switch (data[i].task_status) {
+        switch (data[i].status) {
             case "commited": color = "#F59000"; break;
             case "not_commited": color = "#666666"; break;
             case "solved": color = "#33CC33"; break;
         }
+
+        console.log(color);
 
 		circle = map.drawCircle({
             id: data[i].id,
