@@ -11,7 +11,7 @@ function initializeMap()
         });
 }
 
-function createNewMarker(lat, lng, isMrx, time) {
+function createNewMarker(lat, lng, isMrx, time, username) {
     if (isMrx) {
         imgUrl = 'static/image/pegman_mrx.png';
     } else {
@@ -29,7 +29,7 @@ function createNewMarker(lat, lng, isMrx, time) {
         lat: lat,
         lng: lng,
         icon: image,
-        infoWindow: {content: time}
+        infoWindow: {content: "<p>" + time + "</p>" + username}
 
     });
 
@@ -41,7 +41,7 @@ function updateMarkersCallback(data) {
 	console.log(data)
 	
 	for (var i = data.length - 1; i >= 0; i--) {
-		createNewMarker(data[i].lat, data[i].lng, data[i].role == "mrx", data[i].time);	
+		createNewMarker(data[i].lat, data[i].lng, data[i].role == "mrx", data[i].time, data[i].username);	
 	};	
  }
 
