@@ -86,6 +86,22 @@ class TaskApi(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
+    def list_crimes(self):
+        game_id = cherrypy.request.db.query(Game).filter(or_(Game.status == "active", Game.status == "mrx_active")).all()[0].id;
+
+        all_tasks = cherrypy.request.db.query(Crime, Point)\
+            .join(Point)\
+            .filter(Crime.game_id == game_id).all()
+
+        ret = []
+        for crime, point in all_tasks:
+            ret.append({"lat":point.lat, "lng":point.lng, "radius": point.radius, "status":crime.status})
+
+        return ret
+
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
     @require()
     @cherrypy.tools.allow(methods=['POST'])
     def take(self, id):

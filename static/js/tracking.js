@@ -51,7 +51,47 @@ function updateMarkers() {
             dataType: "json",
             success: updateMarkersCallback
     });
+
+    $.ajax({
+            url: "/api/task/list_crimes",
+            dataType: "json",
+            success: handleTasks
+    });
 }
+
+function handleTasks(data) {
+
+    for (var i = 0; i < map.polygons.length; i++) {
+        polygon = map.polygons[i];
+        polygon.setOptions({map:null});   
+    }
+
+    for (i = 0; i < data.length; i++) {
+        var taskId = data[i].id;
+
+        var color;
+
+        switch (data[i].task_status) {
+            case "commited": color = "#F59000"; break;
+            case "not_commited": color = "#666666"; break;
+            case "solved": color = "#33CC33"; break;
+        }
+
+		circle = map.drawCircle({
+            id: data[i].id,
+            lat: data[i].lat,
+            lng: data[i].lng,
+            radius: data[i].radius,
+            zIndex: i,
+            strokeColor: color,
+            strokeOpacity: 0.5,
+            strokeWeight: 1,
+            fillColor: color,
+            fillOpacity: 0.2
+        });   
+    }
+
+  }
 
 var main = function () {
 	console.log("hi")
