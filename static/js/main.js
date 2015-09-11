@@ -107,7 +107,12 @@ function taskCircleCallback(taskId) {
             });
 
         $('#takeTaskButton').show()
-        $('#takeTaskButton').text("Investigate " + taskId)
+        if (role == "mrx") {
+            $('#takeTaskButton').text("Try")   
+        } else {
+            $('#takeTaskButton').text("Investigate")
+        }
+        
         $('#takeTaskButton').off('click').click(function() {
             $.ajax({
                 type: "POST",
