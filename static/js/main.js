@@ -108,9 +108,9 @@ function taskCircleCallback(taskId) {
 
         $('#takeTaskButton').show()
         if (role == "mrx") {
-            $('#takeTaskButton').text("Investigate")   
+            $('#takeTaskButton').text("Try")   
         } else {
-            $('#takeTaskButton').text("Try")
+            $('#takeTaskButton').text("Investigate")
         }
         
         $('#takeTaskButton').off('click').click(function() {
