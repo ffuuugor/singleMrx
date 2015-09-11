@@ -149,8 +149,8 @@ class TaskApi(object):
         if task.status not in ("active"):
             return {"status":"fail", "msg":"Wrong task status %s. Should be active" % task.status}
 
-        correct_answers = map(lambda x: x.lower(), point.answer)
-        if answer.lower() in correct_answers:
+        correct_answers = map(lambda x: x.lower().trim(), point.answer)
+        if answer.lower().trim() in correct_answers:
             task.status = "completed"
             if role.role == "mrx":
                 crime.status = "commited"
