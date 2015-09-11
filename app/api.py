@@ -36,7 +36,7 @@ class Api(object):
 
         if game.status == "active":
             eta = (datetime.now() - game.detective_start).seconds
-            gap += eta/(60*30) # +1 every 20 minutes
+            gap += eta/(60*45) # +1 every 45 minutes
 
         return gap, None, None
 

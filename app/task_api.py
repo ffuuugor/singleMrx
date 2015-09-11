@@ -26,7 +26,7 @@ class TaskApi(object):
         if meters < 60:
             return 60
         else:
-            return int(meters)
+            return int(meters)*1.5
 
 
     def make_one_task(self, crime, task, point):
