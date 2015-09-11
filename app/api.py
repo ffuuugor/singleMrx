@@ -41,6 +41,38 @@ class Api(object):
         return gap, None, None
 
     @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def all_locations(self, game_id = None):
+        if game_id is None:
+            game_id = cherrypy.request.db.query(Game).filter(or_(Game.status == "active", Game.status == "mrx_active")).all()[0].id;
+
+        locations = cherrypy.request.db.query(Location, Role).join(Game)\
+                    .join(Role, Role.user_id == Location.user_id)\
+                    .filter(Role.game_id == Game.id)\
+                    .filter(Game.id == game_id)\
+                    .all()
+
+        users = {}
+
+        for loc, role in locations:
+            user_id = loc.user_id
+            time = loc.time
+            lat = loc.lat
+            lng = loc.lng
+            role = role.role
+
+            if user_id in users:
+                otime, olat, olng, orole = users[user_id]
+                if time > otime:
+                    users[user_id] = (time, lat, lng, role)
+            else:
+                users[user_id] = (time, lat, lng, role)
+
+        ret = [{"user_id":k, "time":str(v[0]), "lat":v[1], "lng":v[2], "role":v[3]} for k,v in users.iteritems()]
+        return ret
+
+
+    @cherrypy.expose
     @require()
     @cherrypy.tools.json_out()
     def gap(self, game_id = None):

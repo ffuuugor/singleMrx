@@ -1,0 +1,9 @@
+html, body {
+    background-color: #3b3b3b;
+}
+
+html, body, #map-canvas {
+    height: 100%;
+    /*margin-bottom: 20px;*/
+    padding: 0px;
+}
