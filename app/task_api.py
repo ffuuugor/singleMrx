@@ -158,8 +158,9 @@ class TaskApi(object):
     @require()
     @cherrypy.tools.allow(methods=['POST'])
     def answer(self, id, answer):
-        logging.info("Answering %s = %s" % (id, answer))
         user, role, game, all_tasks = get_session_info()
+        logging.error("%s Answering %s = %s" % (user.username, id, answer))
+
         task, crime, point = filter(lambda x: x[1].id == int(id), all_tasks)[0]
 
         if task.status not in ("active"):
