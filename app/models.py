@@ -46,9 +46,17 @@ class Point(Base):
     answer = Column("answer", ARRAY(String))
     comment = Column("comment", String)
     has_present = Column("has_present", Boolean)
+    present_id = Column("present_id", Integer, ForeignKey("smrx.present.id"))
 
+    present = relationship("Present")
 
+class Present(Base):
+    __tablename__ = 'present'
+    __table_args__ = {'schema': 'smrx'}
 
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    img_uri = Column("img_uri", String)
+    comment = Column("comment", String)
 
 def as_dict(model, columns=None):
 

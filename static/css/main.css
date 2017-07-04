@@ -19,6 +19,10 @@
     ​text-shadow: none;
 }
 
+#presentIconLink {
+    display: none;
+}
+
 #mushHuntBar {
    color: #ffffff;
 }

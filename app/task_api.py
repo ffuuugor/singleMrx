@@ -19,7 +19,7 @@ class TaskApi(object):
         else:
             return "static/image/uploads/%s" % uri
 
-    def make_one_task(self, task, point):
+    def make_one_task(self, task, point, present):
         one = {"id":task.id,
                 "lat":task.center_lat,
                 "lng":task.center_lng,
@@ -30,6 +30,15 @@ class TaskApi(object):
         if task.status == "active":
             one["img_url"] = self._make_url(point.img_uri)
             one["text"] = point.question
+            one["comment"] = point.comment
+            one["has_present"] = point.has_present
+
+            if present:
+                one["present"] = {
+                    "img_url": self._make_url(present.img_uri),
+                    "comment": point.comment
+                }
+
 
         return one
 
@@ -40,8 +49,8 @@ class TaskApi(object):
         game, all_tasks = get_session_info()
 
         ret = []
-        for task, point in all_tasks:
-            ret.append(self.make_one_task(task,point))
+        for task, point, present in all_tasks:
+            ret.append(self.make_one_task(task,point, present))
 
         return ret
 
@@ -57,7 +66,7 @@ class TaskApi(object):
             if len(active_tasks) > 0:
                 return {"status":"fail","msg":"Only one task can be active at a time"}
 
-            task, point = filter(lambda x: x[0].id == int(id), all_tasks)[0]
+            task, point, _ = filter(lambda x: x[0].id == int(id), all_tasks)[0]
 
             if task.status != "available":
                 return {"status":"fail", "msg":"Wrong task status %s. Should be pending" % task.status}
@@ -93,7 +102,7 @@ class TaskApi(object):
     def answer(self, id, answer):
         game, all_tasks = get_session_info()
 
-        task, point = filter(lambda x: x[0].id == int(id), all_tasks)[0]
+        task, point, _ = filter(lambda x: x[0].id == int(id), all_tasks)[0]
 
         if task.status != "active":
             return {"status":"fail", "msg":"Wrong task status %s. Should be active" % task.status}
@@ -102,7 +111,7 @@ class TaskApi(object):
         if answer.lower().strip() in correct_answers:
             task.status = "solved"
 
-            if all([task.status == "solved" for task, point in all_tasks]):
+            if all([task.status == "solved" for task, point, _ in all_tasks]):
                 game.status = "finished"
 
             cherrypy.request.db.add(task)

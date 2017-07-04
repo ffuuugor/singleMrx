@@ -2,7 +2,7 @@ __author__ = 'ffuuugor'
 import cherrypy
 import os
 import sys
-from models import Game, Task, Point, as_dict
+from models import Game, Task, Point, as_dict, Present
 import json
 import datetime
 import cgi
@@ -42,17 +42,32 @@ class View(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def upload(self, file, lat, lng, answer, question, comment, radius, has_present=False):
-        extension = mimetypes.guess_extension(file.content_type.value)
-        filename = hashlib.md5(str(time.time())).hexdigest() + extension
-        filepath = os.path.join(cherrypy.config["mrx.uploads.dir"], filename)
+    def upload(self, task_img, lat, lng, answer, question, comment,
+               radius, has_present=False, present_img=None, present_comment=None):
 
-        f = open(filepath,"w")
-        data = file.file.read()
-        print >> f, data
-        f.close()
+        def download_file(file):
+            extension = mimetypes.guess_extension(file.content_type.value)
+            filename = hashlib.md5(str(time.time())).hexdigest() + extension
+            filepath = os.path.join(cherrypy.config["mrx.uploads.dir"], filename)
+
+            f = open(filepath,"w")
+            data = file.file.read()
+            print >> f, data
+            f.close()
+
+            return filename
+
+        task_img_filename = download_file(task_img)
 
         point = Point(lat=float(lat), lng=float(lng), answer=answer.split(','),
-                      img_uri=filename, question=question, comment=comment, radius=int(radius), has_present=has_present)
+                      img_uri=task_img_filename, question=question, comment=comment, radius=int(radius), has_present=has_present)
+
+        if has_present:
+            present_img_filename = download_file(present_img)
+            present = Present(comment = present_comment, img_uri = present_img_filename)
+            point.present = present
+
+            cherrypy.request.db.add(present)
+
         cherrypy.request.db.add(point)
         cherrypy.request.db.commit()

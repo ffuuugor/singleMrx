@@ -23,7 +23,11 @@ def _last_game():
 
 
 def _tasks_by_game(game):
-    return cherrypy.request.db.query(Task, Point).filter(Task.game_id == game.id).join(Point).all()
+    return cherrypy.request.db.query(Task, Point, Present)\
+        .filter(Task.game_id == game.id)\
+        .join(Point)\
+        .outerjoin(Present)\
+        .all()
 
 
 def get_session_info():

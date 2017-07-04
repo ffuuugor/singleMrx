@@ -14,8 +14,7 @@ function takeTaskHandler(data) {
 
 function answerHandler(data) {
     if (data.status == "success") {
-        alert("OK");
-        location.reload();
+        $.mobile.pageContainer.pagecontainer("change", "#correctAnswerPage", {transition:"slide"});
     } else {
         alert(data.msg);
     }   
@@ -152,6 +151,19 @@ function handleTasks(data) {
                 dataType: "json"
                 }); 
         });
+
+        $('#taskComment').text(activeTask.comment);
+        if (activeTask.has_present == true) {
+            $('#answerContinueButton').hide()
+            $('#presentContinueButton').show()
+
+            $('#presentIconLink').show()
+
+            $('#presentComment').text(activeTask.present.comment);
+            $('#presentImg').attr("src",activeTask.present.img_url);
+        }
+
+
     }
 }
 
@@ -220,10 +232,16 @@ function init() {
         $.post("/api/start_game", function(data) {
             if (data.status == "success") {
                 $.mobile.pageContainer.pagecontainer("change", "#mainPage", {transition:"slide"});
+                location.reload();
             } else {
                 alert(data.msg);
             }
         });
+    });
+
+    $(".continue_button").click(function() {
+        $.mobile.pageContainer.pagecontainer("change", "#mainPage", {transition:"none"});
+        location.reload();   
     });
 
     $(".newgamebutton").click(function() {

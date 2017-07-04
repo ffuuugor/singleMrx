@@ -25,7 +25,7 @@ class Api(object):
     def solved_cnt(self):
         game, tasks = get_session_info()
         val = 0
-        for task, point in tasks:
+        for task, point, present in tasks:
             if task.status == "solved":
                 val += 1
         return {"val":val}
