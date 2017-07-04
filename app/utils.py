@@ -1,32 +1,36 @@
 __author__ = 'ffuuugor'
 import cherrypy
 from app.models import *
-from auth import SESSION_KEY
 
-def get_session_info():
-    # username = cherrypy.session.get(SESSION_KEY)
-    username = cherrypy.request.login
 
-    user = cherrypy.request.db.query(User).filter(User.username == username).one()
-    all_games = cherrypy.request.db.query(Role, Game).join(Game.roles)\
-        .filter(Role.user_id == user.id)\
-        .order_by(Game.start.desc())\
+def _last_game():
+    active_games = cherrypy.request.db.query(Game) \
+        .filter(Game.status == "active") \
+        .order_by(Game.created.desc()) \
         .all()
 
-    if len(all_games) == 0:
-        return user, None, None, None
+    if active_games:
+        return active_games[0]
 
-    role, game = all_games[0]
+    all_games = cherrypy.request.db.query(Game) \
+        .order_by(Game.created.desc()) \
+        .all()
 
-    if role.role == "mrx":
-        all_tasks = cherrypy.request.db.query(Task, Crime, Point)\
-            .join(Crime, Crime.mrx_task_id == Task.id)\
-            .join(Point)\
-            .filter(Crime.game_id == game.id).all()
-    elif role.role == "detective":
-        all_tasks = cherrypy.request.db.query(Task, Crime, Point)\
-            .join(Crime, Crime.det_task_id == Task.id)\
-            .join(Point)\
-            .filter(Crime.game_id == game.id).all()
+    if all_games:
+        return all_games[0]
+    else:
+        return None
 
-    return user, role, game, all_tasks
+
+def _tasks_by_game(game):
+    return cherrypy.request.db.query(Task, Point).filter(Task.game_id == game.id).join(Point).all()
+
+
+def get_session_info():
+    game = _last_game()
+    if not Game:
+        return None, None
+
+    tasks = _tasks_by_game(game)
+    return game, tasks
+

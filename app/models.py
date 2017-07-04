@@ -8,106 +8,47 @@ from datetime import datetime
 
 Base = declarative_base()
 
-class User(Base):
-    __tablename__ = 'u'
-    __table_args__ = {'schema': 'mrx'}
-
-    id = Column("id", Integer, primary_key=True, autoincrement=True)
-    username = Column("username", String, unique=True)
-    password = Column("password", String)
-    phone = Column("phone", String)
-
-class Token(Base):
-    __tablename__ = 'token'
-    __table_args__ = {'schema': 'mrx'}
-
-    id = Column("id", Integer, primary_key=True, autoincrement=True)
-    user_id = Column("user_id", Integer, ForeignKey("mrx.u.id"))
-    token = Column("tokne", String)
-
-    user = relationship(User, backref="tokens")
-
 class Game(Base):
     __tablename__ = 'game'
-    __table_args__ = {'schema': 'mrx'}
+    __table_args__ = {'schema': 'smrx'}
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    status = Column("status", Enum("new", "mrx_active", "active","finished", name="game_status", schema="mrx"))
+    status = Column("status", Enum("new", "active","finished","closed", name="game_status", schema="smrx"))
+    created = Column("created", DateTime)
     start = Column("start", DateTime)
-    detective_start = Column("detective_start", DateTime)
-    duration = Column("duration", Interval)
-    code = Column("code", String)
+    finish = Column("duration", DateTime)
 
-class Role(Base):
-    __tablename__ = 'role'
-    __table_args__ = {'schema': 'mrx'}
-
-    id = Column("id", Integer, primary_key=True, autoincrement=True)
-    user_id = Column("user_id", Integer, ForeignKey("mrx.u.id"))
-    game_id = Column("gamr_id", Integer, ForeignKey("mrx.game.id"))
-    role = Column("role", Enum("detective","mrx", name="game_role", schema="mrx"))
-
-    game = relationship(Game, backref="roles")
-    user = relationship(User, backref="roles")
-
-class Location(Base):
-    __tablename__ = 'location'
-    __table_args__ = {'schema': 'mrx'}
-
-    id = Column("id", Integer, primary_key=True, autoincrement=True)
-    user_id = Column("user_id", Integer, ForeignKey("mrx.u.id"))
-    game_id = Column("game_id", Integer, ForeignKey("mrx.game.id"))
-    lat = Column("lat", Float)
-    lng = Column("lng", Float)
-    time = Column("time", DateTime)
-
-    game = relationship(Game)
-    user = relationship(User)
 
 class Task(Base):
     __tablename__ = 'task'
-    __table_args__ = {'schema': 'mrx'}
+    __table_args__ = {'schema': 'smrx'}
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    game_id = Column("game_id", Integer, ForeignKey("mrx.game.id"))
-    status = Column("status", Enum("unavailable", "pending", "requested",
-                                   "active", "cancelled", "completed", name="task_status", schema="mrx"))
-    request_time = Column("request_time", DateTime)
-    walk_time = Column("walk_time", Interval)
-
-    game = relationship("Game")
-
-class Crime(Base):
-    __tablename__ = 'crime'
-    __table_args__ = {'schema': 'mrx'}
-
-    id = Column("id", Integer, primary_key=True, autoincrement=True)
-    game_id = Column("game_id", Integer, ForeignKey("mrx.game.id"))
-    point_id = Column("point_id", Integer, ForeignKey("mrx.photo_point.id"))
+    game_id = Column("game_id", Integer, ForeignKey("smrx.game.id"))
+    point_id = Column("point_id", Integer, ForeignKey("smrx.photo_point.id"))
     center_lat = Column("center_lat", Float)
     center_lng = Column("center_lng", Float)
-    radius = Column("radius", Float)
-    status = Column("status", Enum("not_commited","commited","solved", name="crime_status", schema="mrx"))
-    commit_time = Column("commit_time", DateTime)
-
-    mrx_task_id = Column("mrx_task_id", Integer, ForeignKey("mrx.task.id"))
-    det_task_id = Column('det_task_id', Integer, ForeignKey("mrx.task.id"))
+    status = Column("status", Enum("available","active","solved", name="task_status", schema="smrx"))
 
     point = relationship("Point")
-    mrx_task = relationship("Task", foreign_keys=mrx_task_id)
-    det_task = relationship("Task", foreign_keys=det_task_id)
+
 
 class Point(Base):
     __tablename__ = 'photo_point'
-    __table_args__ = {'schema': 'mrx'}
+    __table_args__ = {'schema': 'smrx'}
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     lat = Column("lat", Float)
     lng = Column("lng", Float)
     radius = Column("radius", Float)
     img_uri = Column("img_uri", String)
-    text = Column("task_text", String)
+    question = Column("question", String)
     answer = Column("answer", ARRAY(String))
+    comment = Column("comment", String)
+    has_present = Column("has_present", Boolean)
+
+
+
 
 def as_dict(model, columns=None):
 

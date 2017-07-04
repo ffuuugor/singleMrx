@@ -30,10 +30,10 @@ def use_task():
     print r.status_code
     print r.json()
 
-def get_pos():
-    r = requests.get("http://localhost:80/get_exposed_pos")
+def new_game():
+    r = requests.post("http://localhost:8000/api/make_newgame")
     print r.status_code
     print r.text
 
 if __name__ == '__main__':
-    get_pos()
+    new_game()
