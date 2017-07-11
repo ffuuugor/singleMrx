@@ -36,7 +36,7 @@ class TaskApi(object):
             if present:
                 one["present"] = {
                     "img_url": self._make_url(present.img_uri),
-                    "comment": point.comment
+                    "comment": present.comment
                 }
 
 
