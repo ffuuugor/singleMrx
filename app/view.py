@@ -45,9 +45,9 @@ class View(object):
     def upload(self, task_img, lat, lng, answer, question, comment,
                radius, has_present=False, present_img=None, present_comment=None):
 
-        def download_file(file):
+        def download_file(file, salt):
             extension = mimetypes.guess_extension(file.content_type.value)
-            filename = hashlib.md5(str(time.time())).hexdigest() + extension
+            filename = hashlib.md5(str(time.time() + salt) + str()).hexdigest() + extension
             filepath = os.path.join(cherrypy.config["mrx.uploads.dir"], filename)
 
             f = open(filepath,"w")
@@ -57,13 +57,13 @@ class View(object):
 
             return filename
 
-        task_img_filename = download_file(task_img)
+        task_img_filename = download_file(task_img, "TASK")
 
         point = Point(lat=float(lat), lng=float(lng), answer=answer.split(','),
                       img_uri=task_img_filename, question=question, comment=comment, radius=int(radius), has_present=has_present)
 
         if has_present:
-            present_img_filename = download_file(present_img)
+            present_img_filename = download_file(present_img, "PRESENT")
             present = Present(comment = present_comment, img_uri = present_img_filename)
             point.present = present
 
