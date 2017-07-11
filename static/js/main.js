@@ -5,7 +5,7 @@ var prevGeoSendTime = undefined;
 
 function takeTaskHandler(data) {
     if (data.status == "success") {
-        alert("OK");
+        alert("Отлично!");
         location.reload();
     } else {
         alert(data.msg);
@@ -53,11 +53,7 @@ function taskCircleCallback(taskId) {
             });
 
         $('#takeTaskButton').show()
-        if (role == "mrx") {
-            $('#takeTaskButton').text("Try")   
-        } else {
-            $('#takeTaskButton').text("Investigate")
-        }
+        $('#takeTaskButton').text("Открыть")
         
         $('#takeTaskButton').off('click').click(function() {
             $.ajax({
@@ -217,6 +213,7 @@ function initWithLoginAndRole() {
             div: '#map-canvas',
             lat: 55.75646,
             lng: 37.64192,
+            zoom: 14,
             disableDefaultUI: true,
             zoomControl: true
             });

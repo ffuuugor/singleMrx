@@ -31,10 +31,10 @@
         <div data-role="header">
         	<div class="ui-grid-c">      
                 <div class="ui-block-a container" style="width:20%;">
-                    solved:<div id="solved_cnt">0</div>
+                    найдено:<div id="solved_cnt">0</div>
                 </div>
             </div>
-            <div><button class="ui-btn ui-btn-right ui-btn-inline container logoutButton newgamebutton">New Game</button></div>
+            <div><button class="ui-btn ui-btn-right ui-btn-inline container logoutButton newgamebutton">Новая игра</button></div>
         </div>
 
         <div data-role="content">
@@ -42,23 +42,22 @@
 
                 <div data-role="navbar" id="navbar">
                     <ul>
-                        <li><a href="#mapTab" class="ui-btn ui-btn-active container" data-ajax="false">Map</a></li>
-                        <li><a href="#taskTab" class="ui-btn container" data-ajax="false">Task</a></li>
+                        <li><a href="#mapTab" class="ui-btn ui-btn-active container" data-ajax="false">Карта</a></li>
+                        <li><a href="#taskTab" class="ui-btn container" data-ajax="false">Задание</a></li>
                     </ul>
                 </div>
 
                 <div id="mapTab" class="ui-content">
-                    <button id="takeTaskButton" class="ui-btn container">Investigate</button>
+                    <button id="takeTaskButton" class="ui-btn container">Открыть</button>
                 	<div id="map-canvas"></div>
                 </div>
                 <div id="taskTab" class="ui-content">
-                    <div id="taskTimerContainer">Image will appear in<div id="taskTimerDiv"></div></div>
                 	<a id="taskImgLink" href=""><img id="taskImg" class="mrxImg" src=""></a>
 
                     <p id="taskText"></p>
 		            <input id='answerInput' type="text">
-                    <button id="answerButton" class="ui-btn" disabled="">Answer</button>
-                    <button id="cancelButton" class="ui-btn" disabled="">Cancel</button>
+                    <button id="answerButton" class="ui-btn" disabled="">Ответить</button>
+                    <button id="cancelButton" class="ui-btn" disabled="">Отмена</button>
                 </div>
             </div>
 
@@ -68,33 +67,33 @@
 
     <div id="startPage" data-role="page">
         <div data-role="header">
-            <h1>Press any key to begin</h1>
+            <h1>Нажмите любую кнопку, чтобы начать</h1>
         </div>
         <div data-role="content">
-            <button class="ui-btn" id="startButton">Any key</button>
+            <button class="ui-btn" id="startButton">Любая кнопка</button>
         </div>
     </div>
 
     <div id="correctAnswerPage" data-role="page">
         <div data-role="header">
-            <h1>Congratulations!</h1>
+            <h1>Молодчинка!</h1>
         </div>
         <div data-role="content">
             <p id="taskComment"></p>
             <a href="#presentPage" id="presentIconLink"><img class="mrxImg" src="static/image/present.png"></a>
-            <button class="ui-btn continue_button" id="answerContinueButton">Next</button>
+            <button class="ui-btn continue_button" id="answerContinueButton">Дальше</button>
         </div>
         
     </div>
 
     <div id="presentPage" data-role="page">
         <div data-role="header">
-            <h1>It's gift time!</h1>
+            <h1>Время подарков!</h1>
         </div>
         <div data-role="content">
             <p id="presentComment"></p>
             <img id="presentImg" class="mrxImg" src=""/>
-            <button class="ui-btn continue_button" id="presentContinueButton">Next</button>
+            <button class="ui-btn continue_button" id="presentContinueButton">Дальше</button>
         </div>
         
     </div>
@@ -103,7 +102,7 @@
         <body bgcolor="#000000">
         <img class="mrxImg" src="static/image/finish.jpg">   
         <div data-role="content">
-            <button class="ui-btn ui-btn-right ui-btn-inline newgamebutton">New Game</button>
+            <button class="ui-btn ui-btn-right ui-btn-inline newgamebutton">Новая игра</button>
         </div> 
     </div>
 
