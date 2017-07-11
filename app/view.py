@@ -47,7 +47,7 @@ class View(object):
 
         def download_file(file, salt):
             extension = mimetypes.guess_extension(file.content_type.value)
-            filename = hashlib.md5(str(time.time() + salt) + str()).hexdigest() + extension
+            filename = hashlib.md5(str(time.time()) + str(salt)).hexdigest() + extension
             filepath = os.path.join(cherrypy.config["mrx.uploads.dir"], filename)
 
             f = open(filepath,"w")
